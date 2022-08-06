@@ -1437,7 +1437,7 @@ function adi_menu_section_list($sections='', $exclude_list='', $override_exclude
 // $exclude_list - LIST = explicitly excluded
 // $override_exclude - TRUE = blanket override exclude for all, FALSE = obey exclude, LIST = explicit list of section to override exclude
 
-	global $adi_menu_debug, $default_first, $default_title, $adi_menu_sql_fields, $adi_menu_vs_sql_fields, $adi_menu_vs_prefix;
+	global $adi_menu_debug, $default_first, $default_title, $adi_menu_sql_fields, $adi_menu_vs_sql_fields, $adi_menu_vs_prefix, $prefs, $relative_urls;
 
 	$section_list = array();
 
@@ -1535,6 +1535,8 @@ function adi_menu_section_list($sections='', $exclude_list='', $override_exclude
 		echo $vq.br;
 	}
 
+	$hu = isset($prefs['url_base']) ? $prefs['url_base'] : hu;
+
 	$rs = safe_rows_start($adi_menu_sql_fields, 'txp_section', $q);
 	if ($rs) {
 		// real sections
@@ -1555,6 +1557,7 @@ function adi_menu_section_list($sections='', $exclude_list='', $override_exclude
 					$a['url'] = pagelinkurl(array('c' => $a['adi_menu_redirect_category']));
 				else
 					$a['url'] = pagelinkurl(array('s' => $a['name']));
+				if ($relative_urls) $a['url'] = str_replace($hu, '/', $a['url']); // relative_urls
 				$section_list[$a['name']] = $a;
 			}
 		}
@@ -1574,6 +1577,7 @@ function adi_menu_section_list($sections='', $exclude_list='', $override_exclude
 					$a['url'] = pagelinkurl(array('c' => $a['adi_menu_redirect_category']));
 				else
 					$a['url'] = '#'; // set null link URL if no section/link/category
+				if ($relative_urls) $a['url'] = str_replace($hu, '/', $a['url']); // relative_urls
 				$section_list[$adi_menu_vs_prefix.$a['name']] = $a; // virtual sections are prefixed
 			}
 			if ($adi_menu_debug) echo br;
@@ -2169,7 +2173,6 @@ function adi_menu_hierarchy($section_list, $article_list=array(), $cat_article_l
 
 	$hierarchy = array();
 	$not_restricted = TRUE;
-dmp($section_list);
 	// active articles only?
 // 	if (($this_section !== NULL) && $active_articles_only)
 	if (($this_section !== '') && $active_articles_only)
@@ -2675,7 +2678,7 @@ function adi_menu_htmlentities($string, $method) {
 
 function adi_menu($atts) {
 // the <txp:adi_menu /> tag
-	global $prefs, $s, $pretext, $out, $menu_id, $parent_class, $active_class, $include_parent, $include_childless, $default_title, $default_first, $clone_title, $class, $link_span, $list_id, $list_id_prefix, $active_li_class, $articles, $article_attr, $section_article_list, $include_children, $active_parent, $active_articles_only, $list_span, $active_ancestors, $descendant_list, $first_class, $last_class, $list_prefix, $prefix_class, $suppress_url, $suppress_url_sections, $new_article_mode, $article_class, $article_position, $active_article_class, $article_sort, $section_levels, $speaking_block, $speaking_block_form, $label, $labeltag, $label_class, $label_id, $current_children_only, $adi_menu_escape, $adi_menu_prefs, $odd_even, $section_article_sort, $category_article_sort, $ignore_alt_title, $cat_section_map, $exclude_clone, $cat_article_sort, $cat_article_attr, $force_current, $include_top_level, $include_siblings, $current_descendants_only, $exclude_niblings;
+	global $prefs, $s, $pretext, $out, $menu_id, $parent_class, $active_class, $include_parent, $include_childless, $default_title, $default_first, $clone_title, $class, $link_span, $list_id, $list_id_prefix, $active_li_class, $articles, $article_attr, $section_article_list, $include_children, $active_parent, $active_articles_only, $list_span, $active_ancestors, $descendant_list, $first_class, $last_class, $list_prefix, $prefix_class, $suppress_url, $suppress_url_sections, $new_article_mode, $article_class, $article_position, $active_article_class, $article_sort, $section_levels, $speaking_block, $speaking_block_form, $label, $labeltag, $label_class, $label_id, $current_children_only, $adi_menu_escape, $adi_menu_prefs, $odd_even, $section_article_sort, $category_article_sort, $ignore_alt_title, $cat_section_map, $exclude_clone, $cat_article_sort, $cat_article_attr, $force_current, $include_top_level, $include_siblings, $current_descendants_only, $exclude_niblings, $relative_urls;
 
 	extract(lAtts(array(
 		'active_ancestors'		=> '0',				// set active class on all ancestors of current section
@@ -2730,6 +2733,7 @@ function adi_menu($atts) {
 		'override_exclude'		=> '',				// list of sections, excluded in admin, to be included
 		'parent_class'			=> 'menuparent',	// CSS class for parent <li>
 		'prefix_class'			=> 'menu_prefix',	// class added to <span> around prefixes
+		'relative_urls'			=> '0',				// urls without domain or http/s protocol
 		'role'					=> 'navigation',	// ARIA role applied to wraptag
 		'sections'				=> '',				// list of sections in menu (default = all)
 		'sort'					=> 'adi_menu_sort',	// section sort (use '' for database order)
