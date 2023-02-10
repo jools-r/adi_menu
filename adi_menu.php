@@ -1641,10 +1641,10 @@ function adi_menu_article_section_popup() {
 			$select_section = gps('Section');
 		else { // existing article, get ID from GET vars & section from database
 			$article_id = gps('ID');
-			$select_section = safe_field("section", "textpattern", "id=".$article_id);
+			if (is_int($article_id)) $select_section = safe_field("section", "textpattern", "id=".$article_id);
 		}
 	}
-	else // empty article
+	if (!isset($select_section)) // empty article or no section found
 		$select_section = getDefaultSection(); // default section for articles (defined in Sections tab)
 	$out = 'name="Section" class="list">';
 	foreach ($section_levels as $name => $level) { // create indented section popup list
