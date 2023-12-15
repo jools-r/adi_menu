@@ -1,568 +1,586 @@
-h1. *adi_menu* - Section hierarchy, section menu and breadcrumb trail
+<h1><strong>adi_menu</strong> &#8211; Section hierarchy, section menu and breadcrumb trail</h1>
 
-This plugin provides:
+<p>This plugin provides:</p>
 
-* a new tab under Presentation, to set up the section hierarchy
-* some tags:
-** "adi_menu":#adi_menu - output the menu markup
-** "adi_menu_info":#adi_menu_info - output adi_menu information
-** "adi_menu_if_info":#adi_menu_if_info - conditional based on adi_menu information
-** "adi_menu_breadcrumb":#adi_menu_breadcrumb - output the breadcrumb markup
+<ul>
+	<li>a new tab under Presentation, to set up the section hierarchy</li>
+	<li>some tags:
+	<ul>
+		<li><a href="#adi_menu">adi_menu</a> &#8211; output the menu markup</li>
+		<li><a href="#adi_menu_info">adi_menu_info</a> &#8211; output adi_menu information</li>
+		<li><a href="#adi_menu_if_info">adi_menu_if_info</a> &#8211; conditional based on adi_menu information</li>
+		<li><a href="#adi_menu_breadcrumb">adi_menu_breadcrumb</a> &#8211; output the breadcrumb markup</li>
+	</ul></li>
+	</ul>
 
-h2. *Installation*
+<h2><strong>Installation</strong></h2>
 
-_Installation of *adi_menu* will add some columns to the 'txp_section' table in your Textpattern database, as well as new 'adi_menu' table.  The extra columns & table should not interfere with anything else.  That said, if you are of a cautious frame of mind then I can thoroughly recommend "rss_admin_db_manager":http://forum.textpattern.com/viewtopic.php?id=10395 to do database backups before installation._
+<p><em>Installation of <strong>adi_menu</strong> will add some columns to the &#8216;txp_section&#8217; table in your Textpattern database, as well as new &#8216;adi_menu&#8217; table.  The extra columns &amp; table should not interfere with anything else.  That said, if you are of a cautious frame of mind then I can thoroughly recommend <a href="https://forum.textpattern.com/viewtopic.php?id=10395">rss_admin_db_manager</a> to do database backups before installation.</em></p>
 
-Once the plugin is installed and activated, go to the *adi_menu* tab under Presentation to assign parents, alternative titles, organise sorting etc. Then add the *adi_menu* tags to your pages or forms.
+<p>Once the plugin is installed and activated, go to the <strong>adi_menu</strong> tab under Presentation to assign parents, alternative titles, organise sorting etc. Then add the <strong>adi_menu</strong> tags to your pages or forms.</p>
 
-Style the menu using CSS.
+<p>Style the menu using <span class="caps">CSS</span>.</p>
 
-h2. *Admin tab*
+<h2><strong>Admin tab</strong></h2>
 
-Users with sufficient privileges will see the *adi_menu* admin tab, under Presentation.  This enables:
+<p>Users with sufficient privileges will see the <strong>adi_menu</strong> admin tab, under Presentation.  This enables:</p>
 
-* Section hierarchy - created by assigning parents
-* Excluding sections - define which sections should be permanently excluded from the rendered section menu (sections can also be excluded using a @<txp:adi_menu />@ tag attribute)
-* Sorting - specify a custom sort order
-* Cloning - specify that a section must appear as a child in its own subsection list (more on that below)
-* Redirection - redirect to another section or link
-* Virtual sections
-* A summary of the configured section hierarchy
-* Preferences
+<ul>
+	<li>Section hierarchy &#8211; created by assigning parents</li>
+	<li>Excluding sections &#8211; define which sections should be permanently excluded from the rendered section menu (sections can also be excluded using a <code>&lt;txp:adi_menu /&gt;</code> tag attribute)</li>
+	<li>Sorting &#8211; specify a custom sort order</li>
+	<li>Cloning &#8211; specify that a section must appear as a child in its own subsection list (more on that below)</li>
+	<li>Redirection &#8211; redirect to another section or link</li>
+	<li>Virtual sections</li>
+	<li>A summary of the configured section hierarchy</li>
+	<li>Preferences</li>
+</ul>
 
-h2. *Submenus*
+<h2><strong>Submenus</strong></h2>
 
-If required, *adi_menu* can be used more than once on a page. For example, to render a submenu separately from a top-level menu you could use:
+<p>If required, <strong>adi_menu</strong> can be used more than once on a page. For example, to render a submenu separately from a top-level menu you could use:</p>
 
-bc. <txp:adi_menu menu_id="top" include_children="0" active_ancestors="1" />
-<txp:adi_menu menu_id="sub" sub_menu_level="2" />
+<pre><code>&lt;txp:adi_menu menu_id=&quot;top&quot; include_children=&quot;0&quot; active_ancestors=&quot;1&quot; /&gt;
+&lt;txp:adi_menu menu_id=&quot;sub&quot; sub_menu_level=&quot;2&quot; /&gt;</code></pre>
 
-For three tiers of menus:
+<p>For three tiers of menus:</p>
 
-bc. <txp:adi_menu menu_id="top" include_children="0" active_ancestors="1" />
-<txp:adi_menu menu_id="sub" sub_menu_level="2" include_children="0" active_ancestors="1" />
-<txp:adi_menu menu_id="subsub" sub_menu_level="3" />
+<pre><code>&lt;txp:adi_menu menu_id=&quot;top&quot; include_children=&quot;0&quot; active_ancestors=&quot;1&quot; /&gt;
+&lt;txp:adi_menu menu_id=&quot;sub&quot; sub_menu_level=&quot;2&quot; include_children=&quot;0&quot; active_ancestors=&quot;1&quot; /&gt;
+&lt;txp:adi_menu menu_id=&quot;subsub&quot; sub_menu_level=&quot;3&quot; /&gt;</code></pre>
 
-If you simply want a submenu starting with children of the current section:
+<p>If you simply want a submenu starting with children of the current section:</p>
 
-bc. <txp:adi_menu menu_id="sub" sub_menu="1" />
+<pre><code>&lt;txp:adi_menu menu_id=&quot;sub&quot; sub_menu=&quot;1&quot; /&gt;</code></pre>
 
-Submenus are just that - they contain items _under_ the currently active section. If you want a menu to consist of the current section and its children try:
+<p>Submenus are just that &#8211; they contain items <em>under</em> the currently active section. If you want a menu to consist of the current section and its children try:</p>
 
-bc. <txp:adi_menu sections="" include_current="1" />
+<pre><code>&lt;txp:adi_menu sections=&quot;&quot; include_current=&quot;1&quot; /&gt;</code></pre>
 
-Notes:
+<p>Notes:</p>
 
-* for styling purposes, you can use the @menu_id@ attribute to set unique ID's on the menu @<ul>@
-* @sub_menu_level@ is section-sensitive, so submenus are based on the currently active section
-* on the upper levels, @include_children="0"@ prevents child sections from being rendered
-* on the lowest submenu, all children & grandchildren are rendered (unless attributes specify otherwise)
-* @active_ancestors="1"@ enables the "active_class" on the upper levels
+<ul>
+	<li>for styling purposes, you can use the <code>menu_id</code> attribute to set unique ID&#8217;s on the menu <code>&lt;ul&gt;</code></li>
+	<li><code>sub_menu_level</code> is section-sensitive, so submenus are based on the currently active section</li>
+	<li>on the upper levels, <code>include_children=&quot;0&quot;</code> prevents child sections from being rendered</li>
+	<li>on the lowest submenu, all children &amp; grandchildren are rendered (unless attributes specify otherwise)</li>
+	<li><code>active_ancestors=&quot;1&quot;</code> enables the &#8220;active_class&#8221; on the upper levels</li>
+</ul>
 
-The old method of rendering submenus (using a combination of @include_current="1"@ & @include_parent="0"@), which only really worked for second level submenus, has been deprecated. However for backwards compatibility, the associated attributes and functionality have been retained. See "the forum":http://forum.textpattern.com/viewtopic.php?id=27778 for details.
+<p>The old method of rendering submenus (using a combination of <code>include_current=&quot;1&quot;</code> &amp; <code>include_parent=&quot;0&quot;</code>), which only really worked for second level submenus, has been deprecated. However for backwards compatibility, the associated attributes and functionality have been retained. See <a href="https://forum.textpattern.com/viewtopic.php?id=27778">the forum</a> for details.</p>
 
-h2. *Speaking blocks*
+<h2><strong>Speaking blocks</strong></h2>
 
-A "speaking block":http://www.smashingmagazine.com/2008/02/26/navigation-menus-trends-and-examples/ is some additional information added to menu items to enhance usability. When you switch on speaking blocks in *adi_menu* (@speaking_block="1"@), each section's sticky article excerpt is added into the menu, enclosed within a @<span>...</span>@ inside the @<a>...</a>@ link.
+<p>A <a href="http://www.smashingmagazine.com/2008/02/26/navigation-menus-trends-and-examples/">speaking block</a> is some additional information added to menu items to enhance usability. When you switch on speaking blocks in <strong>adi_menu</strong> (<code>speaking_block=&quot;1&quot;</code>), each section&#8217;s sticky article excerpt is added into the menu, enclosed within a <code>&lt;span&gt;...&lt;/span&gt;</code> inside the <code>&lt;a&gt;...&lt;/a&gt;</code> link.</p>
 
-Note that because @<a>@ is by default an inline element, block elements such as @<p>@ are not allowed within. _Consequently you should "turn off Textile":http://txptips.com/turn-off-textile-in-your-article in the excerpt_.
+<p>Note that because <code>&lt;a&gt;</code> is by default an inline element, block elements such as <code>&lt;p&gt;</code> are not allowed within. <em>Consequently you should <a href="http://txptips.com/turn-off-textile-in-your-article">turn off Textile</a> in the excerpt</em>.</p>
 
-The default speaking block form contains @<txp:excerpt />@, and does not need to be added manually. If you want to output more than just the sticky article excerpt, for example to include an image, then create a new form containing the required tags and use the @speaking_block_form@ attribute.
+<p>The default speaking block form contains <code>&lt;txp:excerpt /&gt;</code>, and does not need to be added manually. If you want to output more than just the sticky article excerpt, for example to include an image, then create a new form containing the required tags and use the <code>speaking_block_form</code> attribute.</p>
 
-h2. *Articles*
+<h2><strong>Articles</strong></h2>
 
-Articles can be included in the menu using the @articles="1"@ attribute.  By default all live articles are included.
+<p>Articles can be included in the menu using the <code>articles=&quot;1&quot;</code> attribute.  By default all live articles are included.</p>
 
-With the help of the @article_position@ attribute articles will be placed "before", "after" or "dovetail".  By selecting "dovetail" you can interleave articles and sections in a submenu.
+<p>With the help of the <code>article_position</code> attribute articles will be placed &#8220;before&#8221;, &#8220;after&#8221; or &#8220;dovetail&#8221;.  By selecting &#8220;dovetail&#8221; you can interleave articles and sections in a submenu.</p>
 
-There are a number of additional attributes for controlling: which sections/category articles are to included, article sorting, and article selection. See the *adi_menu* tag help below.
+<p>There are a number of additional attributes for controlling: which sections/category articles are to included, article sorting, and article selection. See the <strong>adi_menu</strong> tag help below.</p>
 
-h2. *Virtual sections*
+<h2><strong>Virtual sections</strong></h2>
 
-*adi_menu* is all about sections - Textpattern sections.  Sometimes that's not enough, so it's also possible to create "virtual sections".
+<p><strong>adi_menu</strong> is all about sections &#8211; Textpattern sections.  Sometimes that&#8217;s not enough, so it&#8217;s also possible to create &#8220;virtual sections&#8221;.</p>
 
-Virtual sections are an *adi_menu* construct:
+<p>Virtual sections are an <strong>adi_menu</strong> construct:</p>
 
-* they are defined in the adi_menu admin tab
-* are only relevant to adi_menu menus
-* will not clash with standard TXP sections, nor can be accessed using @<txp:section />@ and the like
+<ul>
+	<li>they are defined in the adi_menu admin tab</li>
+	<li>are only relevant to adi_menu menus</li>
+	<li>will not clash with standard <span class="caps">TXP</span> sections, nor can be accessed using <code>&lt;txp:section /&gt;</code> and the like</li>
+</ul>
 
-Virtual sections can be given names, titles, clones etc. - just like standard sections. They can be parents or children of standard or virtual sections. The main difference is that they _need to be redirected to something_ - either a section, a link or a category.
+<p>Virtual sections can be given names, titles, clones etc. &#8211; just like standard sections. They can be parents or children of standard or virtual sections. The main difference is that they <em>need to be redirected to something</em> &#8211; either a section, a link or a category.</p>
 
-One subtle difference is that a virtual section name, when referencing it explicitly in adi_menu tags, must be prefixed with "v_".  For example:
+<p>One subtle difference is that a virtual section name, when referencing it explicitly in adi_menu tags, must be prefixed with &#8220;v_&#8221;.  For example:</p>
 
-bc. <txp:adi_menu sections="standard,v_virtual" />
+<pre><code>&lt;txp:adi_menu sections=&quot;standard,v_virtual&quot; /&gt;</code></pre>
 
-- will output a menu containing a TXP section called "standard" and a virtual section called "virtual".
+<p>- will output a menu containing a <span class="caps">TXP</span> section called &#8220;standard&#8221; and a virtual section called &#8220;virtual&#8221;.</p>
 
-Don't use the "v_" prefix in the admin tab though!
+<p>Don&#8217;t use the &#8220;v_&#8221; prefix in the admin tab though!</p>
 
-h2. *Categories*
+<h2><strong>Categories</strong></h2>
 
-*adi_menu* is all about sections but it's also possible to bring categories into the mix.  You can create menu items that redirect to article category pages.  These menu items can be standard sections or virtual sections.
+<p><strong>adi_menu</strong> is all about sections but it&#8217;s also possible to bring categories into the mix.  You can create menu items that redirect to article category pages.  These menu items can be standard sections or virtual sections.</p>
 
-These category-redirected menu items can have articles shown under them.  This is switched on as normal by the attribute @articles="1"@, and can be controlled by a number of others, such as @cat_article_attr@, @cat_article_include@, @cat_article_exclude@ & @cat_article_sort@.
+<p>These category-redirected menu items can have articles shown under them.  This is switched on as normal by the attribute <code>articles=&quot;1&quot;</code>, and can be controlled by a number of others, such as <code>cat_article_attr</code>, <code>cat_article_include</code>, <code>cat_article_exclude</code> &amp; <code>cat_article_sort</code>.</p>
 
-h2(#adi_menu). *adi_menu tag*
+<h2 id="adi_menu"><strong>adi_menu tag</strong></h2>
 
-Place the @<txp:adi_menu />@ tag where you want the menu to appear.
+<p>Place the <code>&lt;txp:adi_menu /&gt;</code> tag where you want the menu to appear.</p>
 
-h2. *adi_menu - tag attributes*
+<h2><strong>adi_menu &#8211; tag attributes</strong></h2>
 
-h3. *Explicit inclusion/exclusion:*
+<h3><strong>Explicit inclusion/exclusion:</strong></h3>
 
-@sections="section list"@
+<p><code>sections=&quot;section list&quot;</code></p>
 
-- comma separated list of sections (& their children) to be included in menu. Default = "" (all sections, except those excluded in the adi_menu admin tab).
+<p>- comma separated list of sections (&amp; their children) to be included in menu. Default = &#8220;&#8221; (all sections, except those excluded in the adi_menu admin tab).</p>
 
-@exclude="section list"@
+<p><code>exclude=&quot;section list&quot;</code></p>
 
-- comma separated list of sections to be excluded from the menu. Default = "" (don't exclude any extra sections). _Use if you want to exclude sections over and above what has already been excluded in the adi_menu admin tab._
+<p>- comma separated list of sections to be excluded from the menu. Default = &#8220;&#8221; (don&#8217;t exclude any extra sections). <em>Use if you want to exclude sections over and above what has already been excluded in the adi_menu admin tab.</em></p>
 
-@override_exclude="section list"@
+<p><code>override_exclude=&quot;section list&quot;</code></p>
 
-- comma separated list of excluded sections that must be included in the menu. Default = "" (don't include any excluded sections). _Only use if you want to explicitly include sections that have been excluded in the adi_menu admin tab._
+<p>- comma separated list of excluded sections that must be included in the menu. Default = &#8220;&#8221; (don&#8217;t include any excluded sections). <em>Only use if you want to explicitly include sections that have been excluded in the adi_menu admin tab.</em></p>
 
-h3. *Implicit inclusion/exclusion:*
+<h3><strong>Implicit inclusion/exclusion:</strong></h3>
 
-@include_default="boolean"@
+<p><code>include_default=&quot;boolean&quot;</code></p>
 
-- include 'default' section in menu. Default = "1" (Yes).
+<p>- include &#8216;default&#8217; section in menu. Default = &#8220;1&#8221; (Yes).</p>
 
-@exclude_clone="boolean"@
+<p><code>exclude_clone=&quot;boolean&quot;</code></p>
 
-- use if you don't want clones appearing. Default = "0" (No).
+<p>- use if you don&#8217;t want clones appearing. Default = &#8220;0&#8221; (No).</p>
 
-@include_children="boolean"@
+<p><code>include_children=&quot;boolean&quot;</code></p>
 
-- specifies whether children should be included in the menu. Default = "1" (Yes).
+<p>- specifies whether children should be included in the menu. Default = &#8220;1&#8221; (Yes).</p>
 
-@current_children_only="boolean"@
+<p><code>current_children_only=&quot;boolean&quot;</code></p>
 
-- only the immediate children (sections/articles) of the current section will be output. Default = "0" (all children). _Note that siblings of the current section will also be output._
+<p>- only the immediate children (sections/articles) of the current section will be output. Default = &#8220;0&#8221; (all children). <em>Note that siblings of the current section will also be output.</em></p>
 
-@current_descendants_only="boolean"@
+<p><code>current_descendants_only=&quot;boolean&quot;</code></p>
 
-- only descendants (sections/articles) of the current section will be output. Default = "0" (all descendants). _Note that siblings of the current section & its ancestors will also be output._
+<p>- only descendants (sections/articles) of the current section will be output. Default = &#8220;0&#8221; (all descendants). <em>Note that siblings of the current section &amp; its ancestors will also be output.</em></p>
 
-@include_childless="boolean"@
+<p><code>include_childless=&quot;boolean&quot;</code></p>
 
-- overrides the @include_parent@ attribute for childless top level sections. Default = "0" (No). _Use if you want to output sections that have no children along with the children of other sections._
+<p>- overrides the <code>include_parent</code> attribute for childless top level sections. Default = &#8220;0&#8221; (No). <em>Use if you want to output sections that have no children along with the children of other sections.</em></p>
 
-@include_current="boolean"@
+<p><code>include_current=&quot;boolean&quot;</code></p>
 
-- specifies whether the current section should be added to the sections list. Default = "0" (No). _Not normally required, unless you're doing something special._ Note that if the @sections@ attribute is empty then @include_current="1"@ will result in _only_ the current section (& possibly its children) being output.
+<p>- specifies whether the current section should be added to the sections list. Default = &#8220;0&#8221; (No). <em>Not normally required, unless you&#8217;re doing something special.</em> Note that if the <code>sections</code> attribute is empty then <code>include_current=&quot;1&quot;</code> will result in <em>only</em> the current section (&amp; possibly its children) being output.</p>
 
-@include_parent="boolean"@
+<p><code>include_parent=&quot;boolean&quot;</code></p>
 
-- specifies whether top level sections are output. Default = "1" (Yes). _Switch off if you want to output the children of a section but not the parent section itself._ Childless top level sections are not output in this case either (see @include_childless@ attribute). If you're wanting to generate submenus, then @sub_menu@ or @sub_menu_level@ will be better options.
+<p>- specifies whether top level sections are output. Default = &#8220;1&#8221; (Yes). <em>Switch off if you want to output the children of a section but not the parent section itself.</em> Childless top level sections are not output in this case either (see <code>include_childless</code> attribute). If you&#8217;re wanting to generate submenus, then <code>sub_menu</code> or <code>sub_menu_level</code> will be better options.</p>
 
-h3. *Active indication*
+<h3><strong>Active indication</strong></h3>
 
-@active_parent="boolean"@
+<p><code>active_parent=&quot;boolean&quot;</code></p>
 
-- specifies whether the immediate parent of the currently active section should be made "active" also. Default = "0" (No). If switched on then @active_class@ will be applied to the parent's section link and the class defined using @active_li_class@ will be applied to the parent's @<li>@.
+<p>- specifies whether the immediate parent of the currently active section should be made &#8220;active&#8221; also. Default = &#8220;0&#8221; (No). If switched on then <code>active_class</code> will be applied to the parent&#8217;s section link and the class defined using <code>active_li_class</code> will be applied to the parent&#8217;s <code>&lt;li&gt;</code>.</p>
 
-@active_ancestors="boolean"@
+<p><code>active_ancestors=&quot;boolean&quot;</code></p>
 
-- specifies whether all ancestors of the currently active section should be made "active". Default = "0" (No). If switched on then @active_class@ will be applied to the ancestor's section link and the class defined using @active_li_class@ will be applied to the ancestor's @<li>@. _Note that parents are ancestors, so @active_ancestors="1"@ gives you an active parent too_.
+<p>- specifies whether all ancestors of the currently active section should be made &#8220;active&#8221;. Default = &#8220;0&#8221; (No). If switched on then <code>active_class</code> will be applied to the ancestor&#8217;s section link and the class defined using <code>active_li_class</code> will be applied to the ancestor&#8217;s <code>&lt;li&gt;</code>. <em>Note that parents are ancestors, so <code>active_ancestors=&quot;1&quot;</code> gives you an active parent too</em>.</p>
 
-h3. *Titles*
+<h3><strong>Titles</strong></h3>
 
-@default_title="text"@
+<p><code>default_title=&quot;text&quot;</code></p>
 
-- title to be used for default section. Default = "Home".
+<p>- title to be used for default section. Default = &#8220;Home&#8221;.</p>
 
-@clone_title="text"@
+<p><code>clone_title=&quot;text&quot;</code></p>
 
-- the default title to be used for cloned sections, if no title has been specified in the admin tab. Default = "Summary". _DEPRECATED ATTRIBUTE - future versions will only use Clone titles entered in adi_menu admin._
+<p>- the default title to be used for cloned sections, if no title has been specified in the admin tab. Default = &#8220;Summary&#8221;. <em><span class="caps">DEPRECATED</span> <span class="caps">ATTRIBUTE</span> &#8211; future versions will only use Clone titles entered in adi_menu admin.</em></p>
 
-@ignore_alt_title="boolean"@
+<p><code>ignore_alt_title=&quot;boolean&quot;</code></p>
 
-- alternative titles, if configured, normally take precedence.  Setting this attribute will force normal titles to be output. Default = "0" (use alternative title if available).
+<p>- alternative titles, if configured, normally take precedence.  Setting this attribute will force normal titles to be output. Default = &#8220;0&#8221; (use alternative title if available).</p>
 
-@escape="method"@
+<p><code>escape=&quot;method&quot;</code></p>
 
-- convert characters in section titles to HTML entities. Default = "" (convert all applicable characters, using UTF-8 character set). Use "html" to convert all applicable characters using ISO-8859-1 character set only or "htmlspecial" to only convert special characters (&, ", ', <, >).
+<p>- convert characters in section titles to <span class="caps">HTML</span> entities. Default = &#8220;&#8221; (convert all applicable characters, using <span class="caps">UTF</span>-8 character set). Use &#8220;html&#8221; to convert all applicable characters using <span class="caps">ISO</span>-8859-1 character set only or &#8220;htmlspecial&#8221; to only convert special characters (&amp;, &#8220;, &#8216;, &lt;, &gt;).</p>
 
-h3. *URLs*
+<h3><strong>URLs</strong></h3>
 
-@relative_urls="boolean"@
+<p><code>relative_urls="boolean";</code></p>
 
-- use relative urls. Setting this attribute will output link URLs that do not contain the domain name and http(s) prefix. Default = "0" (= absolute urls).
+<p>- use relative urls. Setting this attribute will output link URLs that do not contain the domain name and http(s) prefix. Default = "0" (= absolute urls).</p>
 
-h3. *Sorting*
+<h3><strong>Sorting</strong></h3>
 
-@default_first="boolean"@
+<p><code>default_first=&quot;boolean&quot;</code></p>
 
-- specifies whether the default section should be listed first. Default = "1" (Yes).
+<p>- specifies whether the default section should be listed first. Default = &#8220;1&#8221; (Yes).</p>
 
-@sort="sort values"@
+<p><code>sort=&quot;sort values&quot;</code></p>
 
-- the sort method to be used for sections. Default = "adi_menu_sort", i.e. the order specified in adi_menu admin tab (or database order if all set to zero). Other options: "" - the order in which sections were originally added; "name" - alphabetical order; "adi_menu_sort, name" - use sort order, then if same use alphabetical order.
+<p>- the sort method to be used for sections. Default = &#8220;adi_menu_sort&#8221;, i.e. the order specified in adi_menu admin tab (or database order if all set to zero). Other options: &#8220;&#8221; - the order in which sections were originally added; &#8220;name&#8221; &#8211; alphabetical order; &#8220;adi_menu_sort, name&#8221; &#8211; use sort order, then if same use alphabetical order.</p>
 
-h3. *Submenus*
+<h3><strong>Submenus</strong></h3>
 
-@sub_menu="boolean"@
+<p><code>sub_menu=&quot;boolean&quot;</code></p>
 
-- output a submenu starting with children of the currently active section . Default="0" (complete menu generated).
+<p>- output a submenu starting with children of the currently active section . Default=&#8220;0&#8221; (complete menu generated).</p>
 
-@sub_menu_level="level"@
+<p><code>sub_menu_level=&quot;level&quot;</code></p>
 
-- the submenu level to be output, where "level" is 2 or more. Default="0" (complete menu generated). This attribute is section-sensitive, so submenus are based on the ancestry of the currently active section. _Note that the first submenu is level 2._
+<p>- the submenu level to be output, where &#8220;level&#8221; is 2 or more. Default=&#8220;0&#8221; (complete menu generated). This attribute is section-sensitive, so submenus are based on the ancestry of the currently active section. <em>Note that the first submenu is level 2.</em></p>
 
-h3. *Articles*
+<h3><strong>Articles</strong></h3>
 
-@articles="boolean"@
+<p><code>articles=&quot;boolean&quot;</code></p>
 
-- specifies whether articles should be included in the menu. Default = "0" (No).
+<p>- specifies whether articles should be included in the menu. Default = &#8220;0&#8221; (No).</p>
 
-@article_position="position"@
+<p><code>article_position=&quot;position&quot;</code></p>
 
-- defines where the articles should be displayed in relation to sections in submenus. Values: "after" (place articles after sections), "before" (place articles before sections), "dovetail" (interleaves articles and subsections alphabetically according to title). Default = "after".
+<p>- defines where the articles should be displayed in relation to sections in submenus. Values: &#8220;after&#8221; (place articles after sections), &#8220;before&#8221; (place articles before sections), &#8220;dovetail&#8221; (interleaves articles and subsections alphabetically according to title). Default = &#8220;after&#8221;.</p>
 
-@active_articles_only="boolean"@
+<p><code>active_articles_only=&quot;boolean&quot;</code></p>
 
-- set if you want articles listed for the currently active section/category only. Default = "0" (articles in all sections listed).
+<p>- set if you want articles listed for the currently active section/category only. Default = &#8220;0&#8221; (articles in all sections listed).</p>
 
-@article_include="section list"@
+<p><code>article_include=&quot;section list&quot;</code></p>
 
-- comma separated list of sections that should have their articles included in the menu. Default = "" (all).
+<p>- comma separated list of sections that should have their articles included in the menu. Default = &#8220;&#8221; (all).</p>
 
-@article_exclude="section list"@
+<p><code>article_exclude=&quot;section list&quot;</code></p>
 
-- comma separated list of sections that won't have their articles included in the menu. Default = "" (none).
+<p>- comma separated list of sections that won&#8217;t have their articles included in the menu. Default = &#8220;&#8221; (none).</p>
 
-@article_sort="sort values"@
+<p><code>article_sort=&quot;sort values&quot;</code></p>
 
-- specifies how articles under menu items should be sorted. Default = "Posted desc". For database order use @article_sort=""@. If used in conjunction with @article_position="dovetail"@ then only "Title", "Title asc" or "Title desc" are recognised. _New article mode only._
+<p>- specifies how articles under menu items should be sorted. Default = &#8220;Posted desc&#8221;. For database order use <code>article_sort=&quot;&quot;</code>. If used in conjunction with <code>article_position=&quot;dovetail&quot;</code> then only &#8220;Title&#8221;, &#8220;Title asc&#8221; or &#8220;Title desc&#8221; are recognised. <em>New article mode only.</em></p>
 
-- section-specific article sorting is also available:
+<p>- section-specific article sorting is also available:</p>
 
-* @article_sort="section1:title"@	- default sort "Posted desc", articles in section1 sorted by "title"
-* @article_sort="title;section2:posted desc"@	- default sort "title", articles in section2 sorted by "Posted desc"
-* @article_sort=";section1:posted desc;section2:custom_5"@	- default sort is database order, articles in section1 sorted by "Posted desc" & section2 articles sorted by custom field "custom_5"
+<ul>
+	<li><code>article_sort=&quot;section1:title&quot;</code>	- default sort &#8220;Posted desc&#8221;, articles in section1 sorted by &#8220;title&#8221;</li>
+	<li><code>article_sort=&quot;title;section2:posted desc&quot;</code>	- default sort &#8220;title&#8221;, articles in section2 sorted by &#8220;Posted desc&#8221;</li>
+	<li><code>article_sort=&quot;;section1:posted desc;section2:custom_5&quot;</code>	- default sort is database order, articles in section1 sorted by &#8220;Posted desc&#8221; &amp; section2 articles sorted by custom field &#8220;custom_5&#8221;</li>
+</ul>
 
-@article_attr='article_custom attributes'@
+<p><code>article_attr=&#39;article_custom attributes&#39;</code></p>
 
-- a list of @<txp:article_custom />@ attributes, separated by spaces, for controlling articles in the menu. Default = '' (i.e. @<txp:article_custom />@ defaults, except @limit@ which is 9999). For example: @article_attr='excerpted="y" limit="20"'@. _Note the use of single quotes._
+<p>- a list of <code>&lt;txp:article_custom /&gt;</code> attributes, separated by spaces, for controlling articles in the menu. Default = &#8216;&#8217; (i.e. <code>&lt;txp:article_custom /&gt;</code> defaults, except <code>limit</code> which is 9999). For example: <code>article_attr=&#39;excerpted=&quot;y&quot; limit=&quot;20&quot;&#39;</code>. <em>Note the use of single quotes.</em></p>
 
-@cat_article_include="category list"@
+<p><code>cat_article_include=&quot;category list&quot;</code></p>
 
-- comma separated list of categories that should have their articles included in the menu (placed under "sections" that have been redirected to those categories). Default = "" (all).
+<p>- comma separated list of categories that should have their articles included in the menu (placed under &#8220;sections&#8221; that have been redirected to those categories). Default = &#8220;&#8221; (all).</p>
 
-@cat_article_exclude="category list"@
+<p><code>cat_article_exclude=&quot;category list&quot;</code></p>
 
-- comma separated list of categories that won't have their articles included in the menu (placed under "sections" that have been redirected to those categories). Default = "" (none).
+<p>- comma separated list of categories that won&#8217;t have their articles included in the menu (placed under &#8220;sections&#8221; that have been redirected to those categories). Default = &#8220;&#8221; (none).</p>
 
-@cat_article_sort="sort values"@
+<p><code>cat_article_sort=&quot;sort values&quot;</code></p>
 
-- specifies how articles under category parents should be sorted. Default = "" (i.e. same as 'article_sort' attribute). For database order use @cat_article_sort=""@. If used in conjunction with @article_position="dovetail"@ then only "Title", "Title asc" or "Title desc" are recognised.
+<p>- specifies how articles under category parents should be sorted. Default = &#8220;&#8221; (i.e. same as &#8216;article_sort&#8217; attribute). For database order use <code>cat_article_sort=&quot;&quot;</code>. If used in conjunction with <code>article_position=&quot;dovetail&quot;</code> then only &#8220;Title&#8221;, &#8220;Title asc&#8221; or &#8220;Title desc&#8221; are recognised.</p>
 
-- category-specific article sorting is also available:
+<p>- category-specific article sorting is also available:</p>
 
-* @cat_article_sort="cat1:title"@	- default sort same as 'article_sort' attribute, articles in cat1 sorted by "title"
-* @cat_article_sort="title;cat2:posted desc"@	- default sort "title", articles in cat2 sorted by "Posted desc"
-* @cat_article_sort=";cat1:posted desc;cat2:custom_5"@	- default sort is database order, articles in cat1 sorted by "Posted desc" & cat2 articles sorted by custom field "custom_5"
+<ul>
+	<li><code>cat_article_sort=&quot;cat1:title&quot;</code>	- default sort same as &#8216;article_sort&#8217; attribute, articles in cat1 sorted by &#8220;title&#8221;</li>
+	<li><code>cat_article_sort=&quot;title;cat2:posted desc&quot;</code>	- default sort &#8220;title&#8221;, articles in cat2 sorted by &#8220;Posted desc&#8221;</li>
+	<li><code>cat_article_sort=&quot;;cat1:posted desc;cat2:custom_5&quot;</code>	- default sort is database order, articles in cat1 sorted by &#8220;Posted desc&#8221; &amp; cat2 articles sorted by custom field &#8220;custom_5&#8221;</li>
+</ul>
 
-@cat_article_attr='article_custom attributes'@
+<p><code>cat_article_attr=&#39;article_custom attributes&#39;</code></p>
 
-- a list of @<txp:article_custom />@ attributes, separated by spaces, for controlling the appearance of articles taken from categories. Default = '' (i.e. same as 'article_attr' attribute). For example: @article_attr='sort="Title" limit="20"'@. _Note the use of single quotes._
+<p>- a list of <code>&lt;txp:article_custom /&gt;</code> attributes, separated by spaces, for controlling the appearance of articles taken from categories. Default = &#8216;&#8217; (i.e. same as &#8216;article_attr&#8217; attribute). For example: <code>article_attr=&#39;sort=&quot;Title&quot; limit=&quot;20&quot;&#39;</code>. <em>Note the use of single quotes.</em></p>
 
-h3. *Markup*
+<h3><strong>Markup</strong></h3>
 
-@wraptag="tag"@
+<p><code>wraptag=&quot;tag&quot;</code></p>
 
-- the (X)HTML tag (without '<>' brackets) to wrap around the whole menu (including the label). Default = "" (no tag). _If there is no menu to output then no wraptag is generated._
+<p>- the (X)HTML tag (without &#8216;&lt;&gt;&#8217; brackets) to wrap around the whole menu (including the label). Default = &#8220;&#8221; (no tag). <em>If there is no menu to output then no wraptag is generated.</em></p>
 
-@label="text"@
+<p><code>label=&quot;text&quot;</code></p>
 
-- some text to precede the menu. Default = "" (no label). _If there is no menu to output then no label is generated._
+<p>- some text to precede the menu. Default = &#8220;&#8221; (no label). <em>If there is no menu to output then no label is generated.</em></p>
 
-@labeltag="tag"@
+<p><code>labeltag=&quot;tag&quot;</code></p>
 
-- the (X)HTML tag (without '<>' brackets) to wrap around the label. Default = "" (no tag).
+<p>- the (X)HTML tag (without &#8216;&lt;&gt;&#8217; brackets) to wrap around the label. Default = &#8220;&#8221; (no tag).</p>
 
-@link_span="boolean"@
+<p><code>link_span=&quot;boolean&quot;</code></p>
 
-- specifies whether the contents of the links should be wrapped in a span, i.e. @<a><span>...</span></a>@. Default = "0" (No).
+<p>- specifies whether the contents of the links should be wrapped in a span, i.e. <code>&lt;a&gt;&lt;span&gt;...&lt;/span&gt;&lt;/a&gt;</code>. Default = &#8220;0&#8221; (No).</p>
 
-@list_span="boolean"@
+<p><code>list_span=&quot;boolean&quot;</code></p>
 
-- specifies whether the contents of the @<li>@ should be wrapped in a span, i.e. @<li><span><a>...</a></span></li>@. Default = "0" (No).
+<p>- specifies whether the contents of the <code>&lt;li&gt;</code> should be wrapped in a span, i.e. <code>&lt;li&gt;&lt;span&gt;&lt;a&gt;...&lt;/a&gt;&lt;/span&gt;&lt;/li&gt;</code>. Default = &#8220;0&#8221; (No).</p>
 
-@speaking_block="boolean"@
+<p><code>speaking_block=&quot;boolean&quot;</code></p>
 
-- enables speaking blocks. Default = "0" (no speaking blocks). By default, speaking blocks are generated from the section's _sticky_ article excerpt.
+<p>- enables speaking blocks. Default = &#8220;0&#8221; (no speaking blocks). By default, speaking blocks are generated from the section&#8217;s <em>sticky</em> article excerpt.</p>
 
-@speaking_block_form="form name"@
+<p><code>speaking_block_form=&quot;form name&quot;</code></p>
 
-- alternative form to be used for the speaking block. Default = "" (none).
+<p>- alternative form to be used for the speaking block. Default = &#8220;&#8221; (none).</p>
 
-@suppress_url="mode"@
+<p><code>suppress_url=&quot;mode&quot;</code></p>
 
-- suppress the URL of the @href@ attribute in a parent section link (i.e. set it to "#"). Set to "all" to suppress all parent section links, "top" to suppress top-level parent section links only or "active" to suppress currently active parents. Default= "" (do not suppress URL).
+<p>- suppress the <span class="caps">URL</span> of the <code>href</code> attribute in a parent section link (i.e. set it to &#8220;#&#8221;). Set to &#8220;all&#8221; to suppress all parent section links, &#8220;top&#8221; to suppress top-level parent section links only or &#8220;active&#8221; to suppress currently active parents. Default= &#8220;&#8221; (do not suppress <span class="caps">URL</span>).</p>
 
-@role="role name"@
+<p><code>role=&quot;role name&quot;</code></p>
 
-- ARIA role attribute automatically added to menu's wraptag when admin preference "Doctype" is HTML5. Default = "navigation".
+<p>- <span class="caps">ARIA</span> role attribute automatically added to menu&#8217;s wraptag when admin preference &#8220;Doctype&#8221; is HTML5. Default = &#8220;navigation&#8221;.</p>
 
-h3. *Classes/IDs*
+<h3><strong>Classes/IDs</strong></h3>
 
-@class="class name"@
+<p><code>class=&quot;class name&quot;</code></p>
 
-- class applied to the top level @<ul>@. Default = "section_list".
+<p>- class applied to the top level <code>&lt;ul&gt;</code>. Default = &#8220;section_list&#8221;.</p>
 
-@menu_id="id name"@
+<p><code>menu_id=&quot;id name&quot;</code></p>
 
-- the ID to be used on the top level @<ul>@.  Default = "mainmenu".
+<p>- the ID to be used on the top level <code>&lt;ul&gt;</code>.  Default = &#8220;mainmenu&#8221;.</p>
 
-@wraptag_class="class name"@
+<p><code>wraptag_class=&quot;class name&quot;</code></p>
 
-- the class to be used on the wraptag.  Default = "menu_wrapper".
+<p>- the class to be used on the wraptag.  Default = &#8220;menu_wrapper&#8221;.</p>
 
-@wraptag_id="id name"@
+<p><code>wraptag_id=&quot;id name&quot;</code></p>
 
-- the ID to be used on the wraptag.  Default = "" (none).
+<p>- the ID to be used on the wraptag.  Default = &#8220;&#8221; (none).</p>
 
-@label_class="class name"@
+<p><code>label_class=&quot;class name&quot;</code></p>
 
-- the class to be used on the label's tag.  Default = "menu_label".
+<p>- the class to be used on the label&#8217;s tag.  Default = &#8220;menu_label&#8221;.</p>
 
-@label_id="id name"@
+<p><code>label_id=&quot;id name&quot;</code></p>
 
-- the ID to be used on the label's tag.  Default = "" (none).
+<p>- the ID to be used on the label&#8217;s tag.  Default = &#8220;&#8221; (none).</p>
 
-@active_class="class name"@
+<p><code>active_class=&quot;class name&quot;</code></p>
 
-- class applied to the current section (or category) link. Default = "active_class".
+<p>- class applied to the current section (or category) link. Default = &#8220;active_class&#8221;.</p>
 
-@active_li_class="class name"@
+<p><code>active_li_class=&quot;class name&quot;</code></p>
 
-- class applied to the current section (or category) @<li>@ element. Default = "" (no class).
+<p>- class applied to the current section (or category) <code>&lt;li&gt;</code> element. Default = &#8220;&#8221; (no class).</p>
 
-@parent_class="class name"@
+<p><code>parent_class=&quot;class name&quot;</code></p>
 
-- the class to be used on section @<li>@ that are parents. Default = "menuparent".
+<p>- the class to be used on section <code>&lt;li&gt;</code> that are parents. Default = &#8220;menuparent&#8221;.</p>
 
-@list_id="boolean"@
+<p><code>list_id=&quot;boolean&quot;</code></p>
 
-- specifies whether the @<li>@ elements should have unique IDs applied. IDs are based on the section names. Default = "0" (No). Note that cloned section IDs will have a suffix of "_clone" added.
+<p>- specifies whether the <code>&lt;li&gt;</code> elements should have unique IDs applied. IDs are based on the section names. Default = &#8220;0&#8221; (No). Note that cloned section IDs will have a suffix of &#8220;_clone&#8221; added.</p>
 
-@list_id_prefix="text"@
+<p><code>list_id_prefix=&quot;text&quot;</code></p>
 
-- the prefix to be used for the @<li>@ IDs. Default = "menu_".
+<p>- the prefix to be used for the <code>&lt;li&gt;</code> IDs. Default = &#8220;menu_&#8221;.</p>
 
-@list_prefix="string"@
+<p><code>list_prefix=&quot;string&quot;</code></p>
 
-- string to be used as a prefix. Default = "" (no prefix). _Note: prefix is inserted within its own @<span>@ (and @class@)_. For example:
-@<li><span class="menu_prefix">PREFIX</span><a>...</a></li>@
-If @link_span@ and @list_span@ are also switched on, then the markup becomes:
-@<li><span><span class="menu_prefix">PREFIX</span><a><span>...</span></a></span></li>@
-_Use in conjunction with @first_class@ attribute to turn prefix into a separator._
+<p>- string to be used as a prefix. Default = &#8220;&#8221; (no prefix). <em>Note: prefix is inserted within its own <code>&lt;span&gt;</code> (and <code>class</code>)</em>. For example:<br>
+<code>&lt;li&gt;&lt;span class=&quot;menu_prefix&quot;&gt;PREFIX&lt;/span&gt;&lt;a&gt;...&lt;/a&gt;&lt;/li&gt;</code><br>
+If <code>link_span</code> and <code>list_span</code> are also switched on, then the markup becomes:<br>
+<code>&lt;li&gt;&lt;span&gt;&lt;span class=&quot;menu_prefix&quot;&gt;PREFIX&lt;/span&gt;&lt;a&gt;&lt;span&gt;...&lt;/span&gt;&lt;/a&gt;&lt;/span&gt;&lt;/li&gt;</code><br>
+<em>Use in conjunction with <code>first_class</code> attribute to turn prefix into a separator.</em></p>
 
-@prefix_class="class name"@
+<p><code>prefix_class=&quot;class name&quot;</code></p>
 
-- class added to the list prefix @<span>...</span>@. Default = "menu_prefix".
+<p>- class added to the list prefix <code>&lt;span&gt;...&lt;/span&gt;</code>. Default = &#8220;menu_prefix&#8221;.</p>
 
-@first_class="class name"@
+<p><code>first_class=&quot;class name&quot;</code></p>
 
-- the class to be used on the _first_ @<li>@ within a @<ul>@. Default = "" (no class). _Note that this class is applied to the first item of every level of the menu._
+<p>- the class to be used on the <em>first</em> <code>&lt;li&gt;</code> within a <code>&lt;ul&gt;</code>. Default = &#8220;&#8221; (no class). <em>Note that this class is applied to the first item of every level of the menu.</em></p>
 
-@last_class="class name"@
+<p><code>last_class=&quot;class name&quot;</code></p>
 
-- the class to be used on the _last_ @<li>@ within a @<ul>@. Default = "" (no class). _Note that this class is applied to the last item of every level of the menu._
+<p>- the class to be used on the <em>last</em> <code>&lt;li&gt;</code> within a <code>&lt;ul&gt;</code>. Default = &#8220;&#8221; (no class). <em>Note that this class is applied to the last item of every level of the menu.</em></p>
 
-@odd_even="boolean"@
+<p><code>odd_even=&quot;boolean&quot;</code></p>
 
-- add "menu_odd" & "menu_even" classes to @<li>@.  Default = "0" (no odd/even classes).
+<p>- add &#8220;menu_odd&#8221; &amp; &#8220;menu_even&#8221; classes to <code>&lt;li&gt;</code>.  Default = &#8220;0&#8221; (no odd/even classes).</p>
 
-@article_class="class name"@
+<p><code>article_class=&quot;class name&quot;</code></p>
 
-- the class applied to @<li>@ elements that contain articles. Default = "menu_article".
+<p>- the class applied to <code>&lt;li&gt;</code> elements that contain articles. Default = &#8220;menu_article&#8221;.</p>
 
-h2(#adi_menu_info). *adi_menu_info tag*
+<h2 id="adi_menu_info"><strong>adi_menu_info tag</strong></h2>
 
-Use the @<txp:adi_menu_info />@ tag when you need to access adi_menu information.  This tag is section sensitive by default and would normally be used in this way in speaking blocks.  However, the tag can be used anywhere if you explicitly specify the section(s) in the "sections" attribute.
+<p>Use the <code>&lt;txp:adi_menu_info /&gt;</code> tag when you need to access adi_menu information.  This tag is section sensitive by default and would normally be used in this way in speaking blocks.  However, the tag can be used anywhere if you explicitly specify the section(s) in the &#8220;sections&#8221; attribute.</p>
 
-h2. *adi_menu_info - tag attributes*
+<h2><strong>adi_menu_info &#8211; tag attributes</strong></h2>
 
-@sections="section list"@
+<p><code>sections=&quot;section list&quot;</code></p>
 
-- comma separated list of sections to display info about. Default = "" (current section).
+<p>- comma separated list of sections to display info about. Default = &#8220;&#8221; (current section).</p>
 
-@type="information type"@
+<p><code>type=&quot;information type&quot;</code></p>
 
-- use one or more of the following types, to display pieces of information about the section(s) defined by the 'sections' attribute. Default: "title".
+<p>- use one or more of the following types, to display pieces of information about the section(s) defined by the &#8216;sections&#8217; attribute. Default: &#8220;title&#8221;.</p>
 
-* title (title)
-* alt_title (alternative title)
-* menu_title (title used in menu - i.e. based on alternative title availability and in speaking blocks, the 'ignore_alt_title' attribute as well)
-* parent (parent's section name)
-* ancestors (list of ancestors, starting with parent)
-* exclude ("1" if excluded in adi_menu admin tab)
-* clone ("1" if cloned in adi_menu admin tab)
-* clone_title (cloned section's title - if defined in adi_menu admin)
-* redirect_section (redirection - section name)
-* redirect_link (redirection - link ID)
-* redirect_category (redirection - category)
+<ul>
+	<li>title (title)</li>
+	<li>alt_title (alternative title)</li>
+	<li>menu_title (title used in menu &#8211; i.e. based on alternative title availability and in speaking blocks, the &#8216;ignore_alt_title&#8217; attribute as well)</li>
+	<li>parent (parent&#8217;s section name)</li>
+	<li>ancestors (list of ancestors, starting with parent)</li>
+	<li>exclude (&#8220;1&#8221; if excluded in adi_menu admin tab)</li>
+	<li>clone (&#8220;1&#8221; if cloned in adi_menu admin tab)</li>
+	<li>clone_title (cloned section&#8217;s title &#8211; if defined in adi_menu admin)</li>
+	<li>redirect_section (redirection &#8211; section name)</li>
+	<li>redirect_link (redirection &#8211; link ID)</li>
+	<li>redirect_category (redirection &#8211; category)</li>
+</ul>
 
-@wraptag="tag"@
+<p><code>wraptag=&quot;tag&quot;</code></p>
 
-- HTML tag (without '<>' brackets) to wrap the items output from the __type__ attribute. Default = "" (no tag).
+<p>- <span class="caps">HTML</span> tag (without &#8216;&lt;&gt;&#8217; brackets) to wrap the items output from the <i>type</i> attribute. Default = &#8220;&#8221; (no tag).</p>
 
-@class="class name"@
+<p><code>class=&quot;class name&quot;</code></p>
 
-- CSS class attribute applied to the wraptag. Default = "" (no class).
+<p>- <span class="caps">CSS</span> class attribute applied to the wraptag. Default = &#8220;&#8221; (no class).</p>
 
-@break="tag"@
+<p><code>break=&quot;tag&quot;</code></p>
 
-- the HTML tag (without '<>' brackets) or string to separate each type item. Default = "" (no tag).
+<p>- the <span class="caps">HTML</span> tag (without &#8216;&lt;&gt;&#8217; brackets) or string to separate each type item. Default = &#8220;&#8221; (no tag).</p>
 
-@breakclass="class name"@
+<p><code>breakclass=&quot;class name&quot;</code></p>
 
-- CSS class attribute applied to each break tag. Default = "" (no class).
+<p>- <span class="caps">CSS</span> class attribute applied to each break tag. Default = &#8220;&#8221; (no class).</p>
 
-@escape="method"@
+<p><code>escape=&quot;method&quot;</code></p>
 
-- convert characters in section titles to HTML entities. Default = "" (convert all applicable characters, using UTF-8 character set). Use "html" to convert all applicable characters using ISO-8859-1 character set only or "htmlspecial" to only convert special characters (&, ", ', <, >).
+<p>- convert characters in section titles to <span class="caps">HTML</span> entities. Default = &#8220;&#8221; (convert all applicable characters, using <span class="caps">UTF</span>-8 character set). Use &#8220;html&#8221; to convert all applicable characters using <span class="caps">ISO</span>-8859-1 character set only or &#8220;htmlspecial&#8221; to only convert special characters (&amp;, &#8220;, &#8216;, &lt;, &gt;).</p>
 
-h2(#adi_menu_if_info). *adi_menu_if_info tag*
+<h2 id="adi_menu_if_info"><strong>adi_menu_if_info tag</strong></h2>
 
-Use the @<txp:adi_menu_if_info />@ conditional tag when you need test adi_menu information.  This tag is section sensitive by default and would normally be used in this way in speaking blocks.  However, the tag can be used anywhere if you explicitly specify the section(s) in the "sections" attribute.
+<p>Use the <code>&lt;txp:adi_menu_if_info /&gt;</code> conditional tag when you need test adi_menu information.  This tag is section sensitive by default and would normally be used in this way in speaking blocks.  However, the tag can be used anywhere if you explicitly specify the section(s) in the &#8220;sections&#8221; attribute.</p>
 
-h2. *adi_menu_if_info - tag attributes*
+<h2><strong>adi_menu_if_info &#8211; tag attributes</strong></h2>
 
-@sections="section list"@
+<p><code>sections=&quot;section list&quot;</code></p>
 
-- comma separated list of sections to be tested. Default = "" (current section).
+<p>- comma separated list of sections to be tested. Default = &#8220;&#8221; (current section).</p>
 
-@type="information type"@
+<p><code>type=&quot;information type&quot;</code></p>
 
-- use one or more of the following types, to test pieces of information about the section(s) defined by the 'sections' attribute. Default: "title".
+<p>- use one or more of the following types, to test pieces of information about the section(s) defined by the &#8216;sections&#8217; attribute. Default: &#8220;title&#8221;.</p>
 
-* title (title)
-* alt_title (alternative title)
-* menu_title (title used in menu - i.e. based on alternative title availability and in speaking blocks, the 'ignore_alt_title' attribute as well)
-* parent (parent's section name)
-* ancestors (ancestors, including parent)
-* exclude (if excluded in adi_menu admin tab)
-* clone (if cloned in adi_menu admin tab)
-* clone_title (if clone has a title defined in adi_menu admin)
-* redirect_section (if redirected to a section)
-* redirect_link (if redirected to a link)
-* redirect_category (if redirected to a category)
-* redirect (if redirected to either a section, link or category)
+<ul>
+	<li>title (title)</li>
+	<li>alt_title (alternative title)</li>
+	<li>menu_title (title used in menu &#8211; i.e. based on alternative title availability and in speaking blocks, the &#8216;ignore_alt_title&#8217; attribute as well)</li>
+	<li>parent (parent&#8217;s section name)</li>
+	<li>ancestors (ancestors, including parent)</li>
+	<li>exclude (if excluded in adi_menu admin tab)</li>
+	<li>clone (if cloned in adi_menu admin tab)</li>
+	<li>clone_title (if clone has a title defined in adi_menu admin)</li>
+	<li>redirect_section (if redirected to a section)</li>
+	<li>redirect_link (if redirected to a link)</li>
+	<li>redirect_category (if redirected to a category)</li>
+	<li>redirect (if redirected to either a section, link or category)</li>
+</ul>
 
-@value="value text"@
+<p><code>value=&quot;value text&quot;</code></p>
 
-- the value that you want to check against.  Default = "" (any non-blank value).
+<p>- the value that you want to check against.  Default = &#8220;&#8221; (any non-blank value).</p>
 
-h2. *adi_menu_info/adi_menu_if_info examples*
+<h2><strong>adi_menu_info/adi_menu_if_info examples</strong></h2>
 
-To output the name of the current section's parent:
+<p>To output the name of the current section&#8217;s parent:</p>
 
-bc. <txp:adi_menu_info type="parent" />
+<pre><code>&lt;txp:adi_menu_info type=&quot;parent&quot; /&gt;</code></pre>
 
-To output the current section's alternative title (if defined in adi_menu admin) instead of the section title:
+<p>To output the current section&#8217;s alternative title (if defined in adi_menu admin) instead of the section title:</p>
 
-bc. <txp:adi_menu_if_info type="alt_title">
-	<h1><txp:adi_menu_info type="alt_title" /></h1>
-<txp:else />
-	<h1><txp:section title="1" /></h1>
-</txp:adi_menu_if_info>
+<pre><code>&lt;txp:adi_menu_if_info type=&quot;alt_title&quot;&gt;
+	&lt;h1&gt;&lt;txp:adi_menu_info type=&quot;alt_title&quot; /&gt;&lt;/h1&gt;
+&lt;txp:else /&gt;
+	&lt;h1&gt;&lt;txp:section title=&quot;1&quot; /&gt;&lt;/h1&gt;
+&lt;/txp:adi_menu_if_info&gt;</code></pre>
 
-To see if a virtual section "myvirtualsection" exists:
+<p>To see if a virtual section &#8220;myvirtualsection&#8221; exists:</p>
 
-bc. <txp:adi_menu_if_info sections="v_myvirtualsection">
-	Virtual section "myvirtualsection" exists
-<txp:else />
-	Virtual section "myvirtualsection" not defined
-</txp:adi_menu_if_info>
+<pre><code>&lt;txp:adi_menu_if_info sections=&quot;v_myvirtualsection&quot;&gt;
+	Virtual section &quot;myvirtualsection&quot; exists
+&lt;txp:else /&gt;
+	Virtual section &quot;myvirtualsection&quot; not defined
+&lt;/txp:adi_menu_if_info&gt;</code></pre>
 
-To test if section "mysection" is redirected to a particular category:
+<p>To test if section &#8220;mysection&#8221; is redirected to a particular category:</p>
 
-bc. <txp:adi_menu_if_info sections="mysection" type="redirect_category" value="hope-for-the-future">
-	Here's hoping for the best!
-<txp:else />
+<pre><code>&lt;txp:adi_menu_if_info sections=&quot;mysection&quot; type=&quot;redirect_category&quot; value=&quot;hope-for-the-future&quot;&gt;
+	Here&#39;s hoping for the best!
+&lt;txp:else /&gt;
 	Assume the worst ...
-</txp:adi_menu_if_info>
+&lt;/txp:adi_menu_if_info&gt;</code></pre>
 
-To test if section "mysection" is an ancestor of current section:
+<p>To test if section &#8220;mysection&#8221; is an ancestor of current section:</p>
 
-bc. <txp:adi_menu_if_info type="redirect_category" value="mysection">
-	"mysection" is an ancestor
-<txp:else />
-	"mysection" is not an ancestor
-</txp:adi_menu_if_info>
+<pre><code>&lt;txp:adi_menu_if_info type=&quot;redirect_category&quot; value=&quot;mysection&quot;&gt;
+	&quot;mysection&quot; is an ancestor
+&lt;txp:else /&gt;
+	&quot;mysection&quot; is not an ancestor
+&lt;/txp:adi_menu_if_info&gt;</code></pre>
 
-h2(#adi_menu_breadcrumb). *adi_menu_breadcrumb tag*
+<h2 id="adi_menu_breadcrumb"><strong>adi_menu_breadcrumb tag</strong></h2>
 
-Use the @<txp:adi_menu_breadcrumb />@ tag to display a breadcrumb trail for the current section, based on your menu hierarchy defined in the adi_menu admin tab.
+<p>Use the <code>&lt;txp:adi_menu_breadcrumb /&gt;</code> tag to display a breadcrumb trail for the current section, based on your menu hierarchy defined in the adi_menu admin tab.</p>
 
-h2. *adi_menu_breadcrumb - tag attributes*
+<h2><strong>adi_menu_breadcrumb &#8211; tag attributes</strong></h2>
 
-@label="text"@
+<p><code>label=&quot;text&quot;</code></p>
 
-- the text to precede the breadcrumb trail output. Default = "You are here: ".
+<p>- the text to precede the breadcrumb trail output. Default = &#8220;You are here: &#8220;.</p>
 
-@labeltag="tag"@
+<p><code>labeltag=&quot;tag&quot;</code></p>
 
-- the (X)HTML tag (without '<>' brackets) to wrap around the label. Default = "" (no tag).
+<p>- the (X)HTML tag (without &#8216;&lt;&gt;&#8217; brackets) to wrap around the label. Default = &#8220;&#8221; (no tag).</p>
 
-@separator="text"@
+<p><code>separator=&quot;text&quot;</code></p>
 
-- the text to use as a separator between the crumbs. Default = " &#187; ".
+<p>- the text to use as a separator between the crumbs. Default = &#8220; &#187; &#8220;.</p>
 
-@title="boolean"@
+<p><code>title=&quot;boolean&quot;</code></p>
 
-- specifies whether the section titles or alternative titles should be used. Default = "1" (Yes).
+<p>- specifies whether the section titles or alternative titles should be used. Default = &#8220;1&#8221; (Yes).</p>
 
-@default_title="text"@
+<p><code>default_title=&quot;text&quot;</code></p>
 
-- the title to be used for the 'default' section. Default = "Home"
+<p>- the title to be used for the &#8216;default&#8217; section. Default = &#8220;Home&#8221;</p>
 
-@ignore_alt_title="boolean"@
+<p><code>ignore_alt_title=&quot;boolean&quot;</code></p>
 
-- alternative section titles, if configured, are normally used. Default = "0" (No).
+<p>- alternative section titles, if configured, are normally used. Default = &#8220;0&#8221; (No).</p>
 
-@link="boolean"@
+<p><code>link=&quot;boolean&quot;</code></p>
 
-- specifies whether the sections should links or not. Default = "1" (Yes).
+<p>- specifies whether the sections should links or not. Default = &#8220;1&#8221; (Yes).</p>
 
-@linkclass="class name"@
+<p><code>linkclass=&quot;class name&quot;</code></p>
 
-- the CSS class assigned to the breadcrumb links. Default = "noline".
+<p>- the <span class="caps">CSS</span> class assigned to the breadcrumb links. Default = &#8220;noline&#8221;.</p>
 
-@link_last="boolean"@
+<p><code>link_last=&quot;boolean&quot;</code></p>
 
-- specifies whether the last section crumb in list (i.e. the current section) should be a link or not. Only applies in article list mode. Default = "0" (No).
+<p>- specifies whether the last section crumb in list (i.e. the current section) should be a link or not. Only applies in article list mode. Default = &#8220;0&#8221; (No).</p>
 
-@include_default="boolean"@
+<p><code>include_default=&quot;boolean&quot;</code></p>
 
-- specifies whether the 'default' section should be output. Default = "1" (Yes).
+<p>- specifies whether the &#8216;default&#8217; section should be output. Default = &#8220;1&#8221; (Yes).</p>
 
-@escape="method"@
+<p><code>escape=&quot;method&quot;</code></p>
 
-- convert characters in section titles to HTML entities. Default = "" (convert all applicable characters, using UTF-8 character set). Use "html" to convert all applicable characters using ISO-8859-1 character set only or "htmlspecial" to only convert special characters (&, ", ', <, >).
+<p>- convert characters in section titles to <span class="caps">HTML</span> entities. Default = &#8220;&#8221; (convert all applicable characters, using <span class="caps">UTF</span>-8 character set). Use &#8220;html&#8221; to convert all applicable characters using <span class="caps">ISO</span>-8859-1 character set only or &#8220;htmlspecial&#8221; to only convert special characters (&amp;, &#8220;, &#8216;, &lt;, &gt;).</p>
 
-h3. *Breadcrumb trail example*
+<h3><strong>Breadcrumb trail example</strong></h3>
 
-To output a breadcrumb trail, including the article's title, try the following:
+<p>To output a breadcrumb trail, including the article&#8217;s title, try the following:</p>
 
-bc. <div id="breadcrumb">
-	<txp:adi_menu_breadcrumb />
-	<txp:if_individual_article>&#187;&#160;<txp:title/></txp:if_individual_article>
-</div>
+<pre><code>&lt;div id=&quot;breadcrumb&quot;&gt;
+	&lt;txp:adi_menu_breadcrumb /&gt;
+	&lt;txp:if_individual_article&gt;&amp;#187;&amp;#160;&lt;txp:title/&gt;&lt;/txp:if_individual_article&gt;
+&lt;/div&gt;</code></pre>
 
-h2. *Textpack*
+<h2><strong>Textpack</strong></h2>
 
-To install the Textpack, go to the plugin's options page and click on "Install textpack".  This will copy & install it from a remote server. The number of language strings installed for your language will be displayed.
+<p>To install the Textpack, go to the plugin&#8217;s options page and click on &#8220;Install textpack&#8221;.  This will copy &amp; install it from a remote server. The number of language strings installed for your language will be displayed.</p>
 
-If the Textpack installation fails (possibly due to an error accessing the remote site), the alternative is to click the "Textpack also available online":http://www.greatoceanmedia.com.au/textpack link.  This will take you to a website where the Textpack can be manually copied & pasted into the TXP Admin - Language tab.
+<p>If the Textpack installation fails (possibly due to an error accessing the remote site), the alternative is to click the <a href="https://www.greatoceanmedia.com.au/textpack">Textpack also available online</a> link.  This will take you to a website where the Textpack can be manually copied &amp; pasted into the <span class="caps">TXP</span> Admin &#8211; Language tab.</p>
 
-Updates and corrections to the Textpack are welcome - please use the "Textpack feedback":http://www.greatoceanmedia.com.au/textpack/?plugin=adi_menu form.
+<p>Updates and corrections to the Textpack are welcome &#8211; please use the <a href="https://www.greatoceanmedia.com.au/textpack/?plugin=adi_menu">Textpack feedback</a> form.</p>
 
-h2(adi_extras). *Additional information*
+<h2 class="adi_extras"><strong>Additional information</strong></h2>
 
-p(adi_extras). Support and further information can be obtained from the "Textpattern support forum":http://forum.textpattern.com/viewtopic.php?id=27778. A copy of this help is also available "online":http://www.greatoceanmedia.com.au/txp/?plugin=adi_menu.  More adi_plugins can be found "here":http://www.greatoceanmedia.com.au/txp/.
+<p class="adi_extras">Support and further information can be obtained from the <a href="https://forum.textpattern.com/viewtopic.php?id=27778">Textpattern support forum</a>. A copy of this help is also available <a href="https://www.greatoceanmedia.com.au/txp/?plugin=adi_menu">online</a>.  More adi_plugins can be found <a href="https://www.greatoceanmedia.com.au/txp/">here</a>.</p>
