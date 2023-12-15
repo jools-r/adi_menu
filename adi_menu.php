@@ -1219,24 +1219,22 @@ function adi_menu_upgrade() {
     // version 1.4
     if (!adi_menu_column_found('adi_menu_redirect_category')) {
         $res = $res && safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_redirect_category VARCHAR(128) DEFAULT '';", $adi_menu_db_debug);
-        $res = $res && safe_query(
-            "CREATE TABLE IF NOT EXISTS "
-            .safe_pfx('adi_menu')
-            ." (
-                `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                `name` VARCHAR(128) NOT NULL,
-                `title` VARCHAR(255) DEFAULT '' NOT NULL,
-                `alt_title` VARCHAR(255) DEFAULT '' NOT NULL,
-                `parent` VARCHAR(128) DEFAULT '' NOT NULL,
-                `clone` TINYINT(1) DEFAULT 0 NOT NULL,
-                `clone_title` VARCHAR(255) DEFAULT '' NOT NULL,
-                `exclude` TINYINT(1) DEFAULT 0 NOT NULL,
-                `sort` TINYINT(3) UNSIGNED DEFAULT 255 NOT NULL,
-                `section` VARCHAR(128) DEFAULT '' NOT NULL,
-                `link` TINYINT(3) UNSIGNED DEFAULT 0 NOT NULL,
-                `category` VARCHAR(128) DEFAULT '' NOT NULL
-            );"
-            , $adi_menu_db_debug
+        $res = $res && safe_create('adi_menu', "
+                id          INT             NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                name        VARCHAR(128)    NOT NULL,
+                title       VARCHAR(255)    NOT NULL DEFAULT '',
+                alt_title   VARCHAR(255)    NOT NULL DEFAULT '',
+                parent      VARCHAR(128)    NOT NULL DEFAULT '',
+                clone       TINYINT(1)      NOT NULL DEFAULT 0,
+                clone_title VARCHAR(255)    NOT NULL DEFAULT '',
+                exclude     TINYINT(1)      NOT NULL DEFAULT 0,
+                sort        TINYINT(3)      UNSIGNED NOT NULL DEFAULT 255,
+                section     VARCHAR(128)    NOT NULL DEFAULT '',
+                link        TINYINT(3)      UNSIGNED NOT NULL DEFAULT 0,
+                category    VARCHAR(128)    NOT NULL DEFAULT ''
+            ",
+            '', // no options
+            $adi_menu_db_debug
         );
         // force unique sort values (using $rs array index from "0") to ensure later use of (unstable) uasort doesn't cause problems
         $rs = safe_rows($adi_menu_sql_fields, 'txp_section', "1=1 ORDER BY adi_menu_sort", $adi_menu_db_debug);
