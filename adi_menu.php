@@ -241,71 +241,9 @@ if (@txpinterface == 'admin') {
 
 function adi_menu_init() {
 // general admin setup
-    global $prefs, $event, $textarray, $adi_menu_url, $adi_menu_prefs, $adi_menu_debug, $adi_menu_db_debug, $adi_menu_sed_sf_installed, $adi_menu_plugin_status;
+    global $prefs, $event, $adi_menu_prefs, $adi_menu_debug, $adi_menu_db_debug, $adi_menu_sed_sf_installed, $adi_menu_plugin_status;
 
     $adi_menu_installed = adi_menu_installed();
-
-# --- BEGIN PLUGIN TEXTPACK ---
-    $adi_menu_gtxt = array(
-        'adi_alt_title' => 'Alternative title',
-        'adi_clone_title' => 'Clone title',
-        'adi_clone' => 'Clone',
-        'adi_for_example' => 'For example',
-        'adi_install_fail' => 'Unable to install',
-        'adi_installed' => 'Installed',
-        'adi_menu' => 'Menu',
-        'adi_menu_duplicate_warning' => 'Standard/virtual section name duplicates',
-        'adi_menu_loop_warning' => 'Parent/child loops found',
-        'adi_menu_order_update_failed' => 'Menu order update failed',
-        'adi_menu_order_updated' => 'Menu order updated',
-        'adi_menu_parent_warning' => 'Sections with non-existant parents',
-        'adi_menu_redirect_category_warning' => 'Sections redirected to non-existant categories',
-        'adi_menu_redirect_link_warning' => 'Sections redirected to non-existant links',
-        'adi_menu_redirect_section_warning' => 'Sections redirected to non-existant sections',
-        'adi_menu_summary_footnote' => 'The menu may be modified further using adi_menu tag attributes',
-        'adi_menu_summary_note_drag_drop' => 'Drag and drop menu items to change order',
-        'adi_menu_summary_note_excluded' => 'Excluded sections are shown in <span>grey</span>',
-        'adi_menu_summary_note_key' => 'sections in <b>bold</b> are redirected, sections in <i>italics</i> have alternative titles',
-        'adi_menu_summary_note_key2' => 'Key: <span><b>Redirected sections</b>, <i>Alternative titles</i>, "Virtual sections", <span>Excluded sections</span></span>',
-        'adi_menu_summary_note_prefix' => 'In adi_menu tags, virtual sections must be referenced using a prefix',
-        'adi_menu_summary_note_virtual' => 'Virtual sections are shown in &quot;quotes&quot;',
-        'adi_menu_summary_note' => 'The above configuration will generate the following section hierarchy',
-        'adi_menu_update_fail' => 'Menu update failed',
-        'adi_menu_update_order' => 'Update menu order',
-        'adi_menu_updated' => 'Menu updated',
-        'adi_menu_virtual_section_deleted' => 'Virtual section deleted',
-        'adi_menu_virtual_section_exists' => 'Virtual section already exists',
-        'adi_menu_virtual_sections' => 'Virtual sections',
-        'adi_not_installed' => 'Not installed',
-        'adi_redirect_category' => 'Redirect category',
-        'adi_redirect_link_id' => 'Redirect link ID',
-        'adi_redirect_link' => 'Redirect link',
-        'adi_redirect_section' => 'Redirect section',
-        'adi_summary' => 'Summary',
-        'adi_textpack_fail' => 'Textpack installation failed',
-        'adi_textpack_feedback' => 'Textpack feedback',
-        'adi_textpack_online' => 'Textpack also available online',
-        'adi_uninstall_fail' => 'Unable to uninstall',
-        'adi_uninstall' => 'Uninstall',
-        'adi_uninstalled' => 'Uninstalled',
-        'adi_update_menu' => 'Update menu',
-        'adi_update_prefs' => 'Update preferences',
-        'adi_write_tab_select_format' => 'Write tab section list format',
-        'adi_write_tab_select_indent' => 'Write tab section list indent',
-    );
-# --- END PLUGIN TEXTPACK ---
-
-    // update $textarray
-    $textarray += $adi_menu_gtxt;
-
-    // Textpack
-    $adi_menu_url = array(
-        'textpack' => 'https://www.greatoceanmedia.com.au/files/adi_textpack.txt',
-        'textpack_download' => 'https://www.greatoceanmedia.com.au/textpack/download',
-        'textpack_feedback' => 'https://www.greatoceanmedia.com.au/textpack/?plugin=adi_menu',
-    );
-    if (strpos($prefs['plugin_cache_dir'], 'adi') !== FALSE) // use Adi's local version
-        $adi_menu_url['textpack'] = $prefs['plugin_cache_dir'].'/adi_textpack.txt';
 
     // plugin lifecycle
     register_callback('adi_menu_lifecycle', 'plugin_lifecycle.adi_menu');
@@ -599,24 +537,12 @@ function adi_menu_admin($event, $step) {
 
 function adi_menu_options($event, $step) {
 // plugin options
-    global $adi_menu_debug, $adi_menu_db_debug, $adi_menu_url, $adi_menu_plugin_status;
+    global $adi_menu_debug, $adi_menu_db_debug, $adi_menu_plugin_status;
 
     $message = '';
 
     // dance steps
-    if ($step == 'textpack') {
-        if (function_exists('install_textpack')) {
-            $adi_textpack = file_get_contents($adi_menu_url['textpack']);
-            if ($adi_textpack) {
-                $result = install_textpack($adi_textpack);
-                $message = gTxt('textpack_strings_installed', array('{count}' => $result));
-                $textarray = load_lang(LANG); // load in new strings
-            }
-            else
-                $message = array(gTxt('adi_textpack_fail'), E_ERROR);
-        }
-    }
-    else if ($step == 'downgrade') {
+    if ($step == 'downgrade') {
         $result = adi_menu_downgrade();
         $result ? $message = gTxt('adi_downgraded') : $message = array(gTxt('adi_downgrade_fail'), E_ERROR);
     }
@@ -662,10 +588,6 @@ function adi_menu_options($event, $step) {
         // options
         echo tag(
             tag('adi_menu '.gTxt('plugin_prefs'), 'h2')
-            // textpack links
-            .graf(href(gTxt('install_textpack'), '?event='.$event.'&amp;step=textpack'))
-            .graf(href(gTxt('adi_textpack_online'), $adi_menu_url['textpack_download']))
-            .graf(href(gTxt('adi_textpack_feedback'), $adi_menu_url['textpack_feedback']))
             .$uninstall_button
             , 'div'
             , ' style="text-align:center"'
@@ -676,9 +598,6 @@ function adi_menu_options($event, $step) {
 
     if ($adi_menu_debug) {
         echo "<p>Event: ".$event.", Step: ".$step."</p>";
-        echo '<p>$adi_textpack ('.$adi_menu_url['textpack'].'):</p>';
-        $adi_textpack = file_get_contents($adi_menu_url['textpack']);
-        dmp($adi_textpack);
     }
 }
 
