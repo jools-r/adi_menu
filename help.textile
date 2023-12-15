@@ -239,9 +239,9 @@ h3. *Articles*
 
 - section-specific article sorting is also available:
 
-* @article_sort="section1:title"@	- default sort "Posted desc", articles in section1 sorted by "title"
-* @article_sort="title;section2:posted desc"@	- default sort "title", articles in section2 sorted by "Posted desc"
-* @article_sort=";section1:posted desc;section2:custom_5"@	- default sort is database order, articles in section1 sorted by "Posted desc" & section2 articles sorted by custom field "custom_5"
+* @article_sort="section1:title"@    - default sort "Posted desc", articles in section1 sorted by "title"
+* @article_sort="title;section2:posted desc"@    - default sort "title", articles in section2 sorted by "Posted desc"
+* @article_sort=";section1:posted desc;section2:custom_5"@    - default sort is database order, articles in section1 sorted by "Posted desc" & section2 articles sorted by custom field "custom_5"
 
 @article_attr='article_custom attributes'@
 
@@ -261,9 +261,9 @@ h3. *Articles*
 
 - category-specific article sorting is also available:
 
-* @cat_article_sort="cat1:title"@	- default sort same as 'article_sort' attribute, articles in cat1 sorted by "title"
-* @cat_article_sort="title;cat2:posted desc"@	- default sort "title", articles in cat2 sorted by "Posted desc"
-* @cat_article_sort=";cat1:posted desc;cat2:custom_5"@	- default sort is database order, articles in cat1 sorted by "Posted desc" & cat2 articles sorted by custom field "custom_5"
+* @cat_article_sort="cat1:title"@    - default sort same as 'article_sort' attribute, articles in cat1 sorted by "title"
+* @cat_article_sort="title;cat2:posted desc"@    - default sort "title", articles in cat2 sorted by "Posted desc"
+* @cat_article_sort=";cat1:posted desc;cat2:custom_5"@    - default sort is database order, articles in cat1 sorted by "Posted desc" & cat2 articles sorted by custom field "custom_5"
 
 @cat_article_attr='article_custom attributes'@
 
@@ -467,33 +467,33 @@ bc. <txp:adi_menu_info type="parent" />
 To output the current section's alternative title (if defined in adi_menu admin) instead of the section title:
 
 bc. <txp:adi_menu_if_info type="alt_title">
-	<h1><txp:adi_menu_info type="alt_title" /></h1>
+    <h1><txp:adi_menu_info type="alt_title" /></h1>
 <txp:else />
-	<h1><txp:section title="1" /></h1>
+    <h1><txp:section title="1" /></h1>
 </txp:adi_menu_if_info>
 
 To see if a virtual section "myvirtualsection" exists:
 
 bc. <txp:adi_menu_if_info sections="v_myvirtualsection">
-	Virtual section "myvirtualsection" exists
+    Virtual section "myvirtualsection" exists
 <txp:else />
-	Virtual section "myvirtualsection" not defined
+    Virtual section "myvirtualsection" not defined
 </txp:adi_menu_if_info>
 
 To test if section "mysection" is redirected to a particular category:
 
 bc. <txp:adi_menu_if_info sections="mysection" type="redirect_category" value="hope-for-the-future">
-	Here's hoping for the best!
+    Here's hoping for the best!
 <txp:else />
-	Assume the worst ...
+    Assume the worst ...
 </txp:adi_menu_if_info>
 
 To test if section "mysection" is an ancestor of current section:
 
 bc. <txp:adi_menu_if_info type="redirect_category" value="mysection">
-	"mysection" is an ancestor
+    "mysection" is an ancestor
 <txp:else />
-	"mysection" is not an ancestor
+    "mysection" is not an ancestor
 </txp:adi_menu_if_info>
 
 h2(#adi_menu_breadcrumb). *adi_menu_breadcrumb tag*
@@ -551,8 +551,8 @@ h3. *Breadcrumb trail example*
 To output a breadcrumb trail, including the article's title, try the following:
 
 bc. <div id="breadcrumb">
-	<txp:adi_menu_breadcrumb />
-	<txp:if_individual_article>&#187;&#160;<txp:title/></txp:if_individual_article>
+    <txp:adi_menu_breadcrumb />
+    <txp:if_individual_article>&#187;&#160;<txp:title/></txp:if_individual_article>
 </div>
 
 h2. *Textpack*
