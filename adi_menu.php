@@ -300,9 +300,9 @@ function adi_menu_init() {
 
     // Textpack
     $adi_menu_url = array(
-        'textpack' => 'http://www.greatoceanmedia.com.au/files/adi_textpack.txt',
-        'textpack_download' => 'http://www.greatoceanmedia.com.au/textpack/download',
-        'textpack_feedback' => 'http://www.greatoceanmedia.com.au/textpack/?plugin=adi_menu',
+        'textpack' => 'https://www.greatoceanmedia.com.au/files/adi_textpack.txt',
+        'textpack_download' => 'https://www.greatoceanmedia.com.au/textpack/download',
+        'textpack_feedback' => 'https://www.greatoceanmedia.com.au/textpack/?plugin=adi_menu',
     );
     if (strpos($prefs['plugin_cache_dir'], 'adi') !== FALSE) // use Adi's local version
         $adi_menu_url['textpack'] = $prefs['plugin_cache_dir'].'/adi_textpack.txt';
@@ -884,7 +884,7 @@ function adi_menu_display_settings($sections) {
         $out .= tr(
             // section name/link to section tab (normal sections) OR input field (virtual sections)
             ($id === NULL ?
-                tda('<a href="http://'.$prefs['siteurl'].'/textpattern/?event=section&amp;step=section_edit&amp;name='.$index.'">'.$index.'</a>')
+                tda('<a href="'.ahu.'index.php?event=section&amp;step=section_edit&amp;name='.$index.'">'.$index.'</a>')
                 :
                 tda(finput('text', "name[$index]", $name))
             )
