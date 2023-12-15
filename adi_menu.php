@@ -424,7 +424,7 @@ function adi_menu_admin($event, $step) {
             .startTable('list', '', "edit-table txp-list")
             .tag(
                 tr(
-                    hcell(gTxt('section_name'))
+                    hcell(gTxt('section'))
                     .hcell(gTxt('title'))
                     .hcell(gTxt('adi_alt_title'))
                     .hcell(gTxt('exclude'))
@@ -484,7 +484,7 @@ function adi_menu_admin($event, $step) {
     // plugin preferences
     if ($installed)
         echo form(
-            tag(gTxt('edit_preferences'), "h2")
+            tag(gTxt('tab_preferences'), "h2")
             .graf(
                 gTxt('adi_write_tab_select_format')
                 .sp.sp
@@ -556,7 +556,7 @@ function adi_menu_options($event, $step) {
     }
 
     // generate page
-    pagetop('adi_menu - '.gTxt('plugin_prefs'), $message);
+    pagetop('adi_menu – '.gTxt('tab_preferences'), $message);
 
     $install_button =
         tag(
@@ -587,7 +587,7 @@ function adi_menu_options($event, $step) {
         adi_menu_upgrade();
         // options
         echo tag(
-            tag('adi_menu '.gTxt('plugin_prefs'), 'h2')
+            tag('adi_menu – '.gTxt('tab_preferences'), 'h2')
             .$uninstall_button
             , 'div'
             , ' style="text-align:center"'
