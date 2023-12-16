@@ -10,6 +10,8 @@
     Released under the GNU General Public License
 
     Version history:
+    1.4.2   - include textpacks within plugin; remove remote install facility
+            - remove unneeded options panel
     1.4.1   - new feature: relative_urls: link URLs without domain name and http(s) prefix
             - fix: uncaught type error in PHP 8.2
     1.4     - new feature: virtual sections
@@ -241,7 +243,7 @@ if (@txpinterface == 'admin') {
 
 function adi_menu_init() {
 // general admin setup
-    global $prefs, $event, $adi_menu_prefs, $adi_menu_debug, $adi_menu_db_debug, $adi_menu_sed_sf_installed, $adi_menu_plugin_status;
+    global $prefs, $event, $adi_menu_prefs, $adi_menu_debug, $adi_menu_db_debug, $adi_menu_sed_sf_installed;
 
     $adi_menu_installed = adi_menu_installed();
 
@@ -269,18 +271,6 @@ function adi_menu_init() {
     // check out other plugins & their versions
     if ($adi_menu_installed)
         $adi_menu_sed_sf_installed = safe_row("version", "txp_plugin", "status = 1 AND name='sed_section_fields'", $adi_menu_db_debug);
-
-    // plugin options
-    $adi_menu_plugin_status = fetch('status', 'txp_plugin', 'name', 'adi_menu', $adi_menu_db_debug);
-    if ($adi_menu_plugin_status) { // proper install - options under Plugins tab
-        add_privs('plugin_prefs.adi_menu'); // defaults to priv '1' only
-        register_callback('adi_menu_options', 'plugin_prefs.adi_menu');
-    }
-    else { // txpdev - options under Extensions tab
-        add_privs('adi_menu_options');
-        register_tab('extensions', 'adi_menu_options', 'adi_menu options');
-        register_callback('adi_menu_options','adi_menu_options');
-    }
 
     // style
     if ($event == 'adi_menu_admin')
@@ -537,7 +527,7 @@ function adi_menu_admin($event, $step) {
 
 function adi_menu_options($event, $step) {
 // plugin options
-    global $adi_menu_debug, $adi_menu_db_debug, $adi_menu_plugin_status;
+    global $adi_menu_debug, $adi_menu_db_debug;
 
     $message = '';
 
@@ -553,51 +543,6 @@ function adi_menu_options($event, $step) {
     else if ($step == 'uninstall') {
         $result = adi_menu_uninstall();
         $result ? $message = gTxt('adi_uninstalled') : $message = array(gTxt('adi_uninstall_fail'), E_ERROR);
-    }
-
-    // generate page
-    pagetop('adi_menu – '.gTxt('tab_preferences'), $message);
-
-    $install_button =
-        tag(
-            form(
-                fInput("submit", "do_something", gTxt('install'), "publish", "", 'return verify(\''.gTxt('are_you_sure').'\')')
-                .eInput($event).sInput("install")
-                , '', '', 'post'
-            )
-            , 'div'
-            , ' style="text-align:center"'
-        );
-    $uninstall_button =
-        tag(
-            form(
-                fInput("submit", "do_something", gTxt('adi_uninstall'), "publish", "", 'return verify(\''.gTxt('are_you_sure').'\')')
-                .eInput($event).sInput("uninstall")
-                , '', '', 'post'
-            )
-            , 'div'
-            , ' style="margin-top:5em"');
-
-    if ($adi_menu_plugin_status) // proper plugin install, so lifecycle takes care of install/uninstall
-        $install_button = $uninstall_button = '';
-
-    $installed = adi_menu_installed();
-
-    if ($installed) {
-        adi_menu_upgrade();
-        // options
-        echo tag(
-            tag('adi_menu – '.gTxt('tab_preferences'), 'h2')
-            .$uninstall_button
-            , 'div'
-            , ' style="text-align:center"'
-        );
-    }
-    else // install button
-        echo $install_button;
-
-    if ($adi_menu_debug) {
-        echo "<p>Event: ".$event.", Step: ".$step."</p>";
     }
 }
 
