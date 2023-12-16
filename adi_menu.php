@@ -12,6 +12,7 @@
     Version history:
     1.4.2   - include textpacks within plugin; remove remote install facility
             - remove unneeded options panel
+            - TXP 4.6+ only
     1.4.1   - new feature: relative_urls: link URLs without domain name and http(s) prefix
             - fix: uncaught type error in PHP 8.2
     1.4     - new feature: virtual sections
@@ -230,13 +231,9 @@ $adi_menu_info_types =
         'ancestors'          => array('column' => 'adi_menu_parent', 'blank' => '') // find ancestors, starting with parent
     );
 
-if (@txpinterface == 'admin') {
-    global $adi_menu_txp460;
-
+if (txpinterface === 'admin') {
     // it's a modern world
-    if (!version_compare(txp_version,'4.5.0', '>=')) return;
-
-    $adi_menu_txp460 = version_compare(txp_version, '4.6-dev', '>=');
+    if (!version_compare(txp_version, '4.6-dev', '>=')) return;
 
     adi_menu_init();
 }
@@ -548,7 +545,6 @@ function adi_menu_options($event, $step) {
 
 function adi_menu_admin_script() {
 // jQuery magic for admin tab
-    global $adi_menu_txp460;
 
     $section_list = adi_menu_section_list('', '', TRUE);
     $sort_value_jquery = '';
@@ -561,8 +557,6 @@ function adi_menu_admin_script() {
     $button_text = gTxt('adi_menu_update_order');
 
     $ui_script = '';
-    if (!$adi_menu_txp460)
-        $ui_script = '<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/jquery-ui.min.js"></script>';
 
     echo <<<END_SCRIPT
 <!-- drag and drop -->
@@ -835,7 +829,6 @@ function adi_menu_category_popup($select_name, $value) {
 
 function adi_menu_delete_button($id, $name) {
 // virtual section delete button [X]
-    global $adi_menu_txp460;
 
     $event = 'adi_menu_admin';
     $step = 'delete';
@@ -854,30 +847,21 @@ function adi_menu_delete_button($id, $name) {
 //         return sp;
 
     if ($id) {
-        if ($adi_menu_txp460)
-            return
-                href(
-                    span('Delete', ' class="ui-icon ui-icon-trash"')
-                    , array(
-                        'event' => $event,
-                        'step' => $step,
-                        'name' => $name,
-                        '_txp_token'    => form_token(),
-                    )
-                    , array(
-                        'class'       => 'dlink destroy',
-                        'title'       => gTxt('delete'),
-                        'data-verify' => gTxt('confirm_delete_popup'),
-                    )
-                );
-        else
-            return
-                '<a href="?event='.$event.a.'step='.$step.a.'name='.$name
-                .'" class="dlink" title="'.gTxt('delete').'" onclick="return verify(\''
-                .gTxt('confirm_delete_popup')
-                .'\')">'
-                .'&#215;'
-                .'</a>';
+        return
+            href(
+                span('Delete', ' class="ui-icon ui-icon-trash"')
+                , array(
+                    'event' => $event,
+                    'step' => $step,
+                    'name' => $name,
+                    '_txp_token'    => form_token(),
+                )
+                , array(
+                    'class'       => 'dlink destroy',
+                    'title'       => gTxt('delete'),
+                    'data-verify' => gTxt('confirm_delete_popup'),
+                )
+            );
     }
     else // don't want delete button (id="0") for real sections or new section (id="")
         return sp;
@@ -1131,7 +1115,6 @@ function adi_menu_lifecycle($event, $step) {
 // a matter of life & death
 // $event:    "plugin_lifecycle.adi_menu"
 // $step:    "installed", "enabled", "disabled", "deleted"
-// TXP 4.5: reinstall/upgrade only triggers "installed" event (now have to manually detect whether upgrade required)
     global $adi_menu_debug;
 
     $result = '?';
