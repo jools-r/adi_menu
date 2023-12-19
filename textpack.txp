@@ -1,4 +1,4 @@
-#@language en, en-ca, en-gb, en-us
+#@language en
 #@admin-side
 adi_menu => Menu
 #@adi_menu
@@ -14,8 +14,7 @@ adi_menu_order_update_failed => Menu order update failed
 adi_menu_order_updated => Menu order updated
 adi_menu_parent_warning => Sections with non-existant parents
 adi_menu_redirect_category_warning => Sections redirected to non-existant categories
-adi_menu_redirect_link_warning => Sections redirected to non-existant links
-adi_menu_redirect_section_warning => Sections redirected to non-existant sections
+adi_menu_redirect_link_warning => Sections redirected to non-existant linksadi_menu_redirect_section_warning => Sections redirected to non-existant sections
 adi_menu_summary_footnote => The menu may be modified further using adi_menu tag attributes
 adi_menu_summary_note_drag_drop => Drag and drop menu items to change order
 adi_menu_summary_note_excluded => Excluded sections are shown in <span>grey</span>
@@ -44,7 +43,7 @@ adi_update_prefs => Update preferences
 adi_write_tab_select_format => Write tab section list format
 adi_write_tab_select_indent => Write tab section list indent
 
-#@language cs-cz
+#@language cs
 #@admin-side
 adi_menu => Menu
 #@adi_menu
@@ -74,7 +73,7 @@ adi_update_prefs => Aktualizovat nastavení
 adi_write_tab_select_format => Formát řazení a zobrazení rubrik v sekci Psaní
 adi_write_tab_select_indent => Odsazení podřízených rubrik
 
-#@language fr-fr
+#@language fr
 #@admin-side
 adi_menu => Menu
 #@adi_menu
@@ -104,7 +103,7 @@ adi_update_prefs => Mettre à jour les préférences
 adi_write_tab_select_format => Format de la liste des section dans l'onglet Rédiger
 adi_write_tab_select_indent => Indentation des sections dans l'onglet Rédiger
 
-#@language pl-pl
+#@language pl
 #@admin-side
 adi_menu => Menu
 #@adi_menu
