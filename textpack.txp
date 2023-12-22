@@ -1,5 +1,5 @@
-#@language en
 #@owner gomedia
+#@language en
 adi_install_fail => Unable to install
 adi_installed => Installed
 adi_not_installed => Not installed
@@ -45,9 +45,7 @@ adi_summary => Summary
 adi_update_menu => Update menu
 adi_write_tab_select_format => Write tab section list format
 adi_write_tab_select_indent => Write tab section list indent
-
 #@language cs
-#@owner gomedia
 adi_install_fail => Nelze nainstalovat
 adi_installed => Nainstalováno
 adi_not_installed => Nenainstalováno
@@ -76,9 +74,7 @@ adi_summary => Výsledek
 adi_update_menu => Aktualizovat menu
 adi_write_tab_select_format => Formát řazení a zobrazení rubrik v sekci Psaní
 adi_write_tab_select_indent => Odsazení podřízených rubrik
-
 #@language fr
-#@owner gomedia
 adi_install_fail => Impossible d'installer
 adi_installed => Installé
 adi_not_installed => Non installé
@@ -107,9 +103,7 @@ adi_summary => Sommaire
 adi_update_menu => Mettre à jour
 adi_write_tab_select_format => Format de la liste des section dans l'onglet Rédiger
 adi_write_tab_select_indent => Indentation des sections dans l'onglet Rédiger
-
 #@language pl
-#@owner gomedia
 adi_install_fail => Nie można zainstalować
 adi_installed => Zainstalowano
 adi_not_installed => Nie zainstalowano
