@@ -123,77 +123,77 @@
 
 <p><code>sections=&quot;section list&quot;</code></p>
 
-<p>- comma separated list of sections (&amp; their children) to be included in menu. Default = &#8220;&#8221; (all sections, except those excluded in the adi_menu admin tab).</p>
+<p>- comma separated list of sections (&amp; their children) to be included in menu. Default = &quot;&quot; (all sections, except those excluded in the adi_menu admin tab).</p>
 
 <p><code>exclude=&quot;section list&quot;</code></p>
 
-<p>- comma separated list of sections to be excluded from the menu. Default = &#8220;&#8221; (don&#8217;t exclude any extra sections). <em>Use if you want to exclude sections over and above what has already been excluded in the adi_menu admin tab.</em></p>
+<p>- comma separated list of sections to be excluded from the menu. Default = &quot;&quot; (don&#8217;t exclude any extra sections). <em>Use if you want to exclude sections over and above what has already been excluded in the adi_menu admin tab.</em></p>
 
 <p><code>override_exclude=&quot;section list&quot;</code></p>
 
-<p>- comma separated list of excluded sections that must be included in the menu. Default = &#8220;&#8221; (don&#8217;t include any excluded sections). <em>Only use if you want to explicitly include sections that have been excluded in the adi_menu admin tab.</em></p>
+<p>- comma separated list of excluded sections that must be included in the menu. Default = &quot;&quot; (don&#8217;t include any excluded sections). <em>Only use if you want to explicitly include sections that have been excluded in the adi_menu admin tab.</em></p>
 
 <h3><strong>Implicit inclusion/exclusion:</strong></h3>
 
 <p><code>include_default=&quot;boolean&quot;</code></p>
 
-<p>- include &#8216;default&#8217; section in menu. Default = &#8220;1&#8221; (Yes).</p>
+<p>- include &#8216;default&#8217; section in menu. Default = &quot;1&quot; (Yes).</p>
 
 <p><code>exclude_clone=&quot;boolean&quot;</code></p>
 
-<p>- use if you don&#8217;t want clones appearing. Default = &#8220;0&#8221; (No).</p>
+<p>- use if you don&#8217;t want clones appearing. Default = &quot;0&quot; (No).</p>
 
 <p><code>include_children=&quot;boolean&quot;</code></p>
 
-<p>- specifies whether children should be included in the menu. Default = &#8220;1&#8221; (Yes).</p>
+<p>- specifies whether children should be included in the menu. Default = &quot;1&quot; (Yes).</p>
 
 <p><code>current_children_only=&quot;boolean&quot;</code></p>
 
-<p>- only the immediate children (sections/articles) of the current section will be output. Default = &#8220;0&#8221; (all children). <em>Note that siblings of the current section will also be output.</em></p>
+<p>- only the immediate children (sections/articles) of the current section will be output. Default = &quot;0&quot; (all children). <em>Note that siblings of the current section will also be output.</em></p>
 
 <p><code>current_descendants_only=&quot;boolean&quot;</code></p>
 
-<p>- only descendants (sections/articles) of the current section will be output. Default = &#8220;0&#8221; (all descendants). <em>Note that siblings of the current section &amp; its ancestors will also be output.</em></p>
+<p>- only descendants (sections/articles) of the current section will be output. Default = &quot;0&quot; (all descendants). <em>Note that siblings of the current section &amp; its ancestors will also be output.</em></p>
 
 <p><code>include_childless=&quot;boolean&quot;</code></p>
 
-<p>- overrides the <code>include_parent</code> attribute for childless top level sections. Default = &#8220;0&#8221; (No). <em>Use if you want to output sections that have no children along with the children of other sections.</em></p>
+<p>- overrides the <code>include_parent</code> attribute for childless top level sections. Default = &quot;0&quot; (No). <em>Use if you want to output sections that have no children along with the children of other sections.</em></p>
 
 <p><code>include_current=&quot;boolean&quot;</code></p>
 
-<p>- specifies whether the current section should be added to the sections list. Default = &#8220;0&#8221; (No). <em>Not normally required, unless you&#8217;re doing something special.</em> Note that if the <code>sections</code> attribute is empty then <code>include_current=&quot;1&quot;</code> will result in <em>only</em> the current section (&amp; possibly its children) being output.</p>
+<p>- specifies whether the current section should be added to the sections list. Default = &quot;0&quot; (No). <em>Not normally required, unless you&#8217;re doing something special.</em> Note that if the <code>sections</code> attribute is empty then <code>include_current=&quot;1&quot;</code> will result in <em>only</em> the current section (&amp; possibly its children) being output.</p>
 
 <p><code>include_parent=&quot;boolean&quot;</code></p>
 
-<p>- specifies whether top level sections are output. Default = &#8220;1&#8221; (Yes). <em>Switch off if you want to output the children of a section but not the parent section itself.</em> Childless top level sections are not output in this case either (see <code>include_childless</code> attribute). If you&#8217;re wanting to generate submenus, then <code>sub_menu</code> or <code>sub_menu_level</code> will be better options.</p>
+<p>- specifies whether top level sections are output. Default = &quot;1&quot; (Yes). <em>Switch off if you want to output the children of a section but not the parent section itself.</em> Childless top level sections are not output in this case either (see <code>include_childless</code> attribute). If you&#8217;re wanting to generate submenus, then <code>sub_menu</code> or <code>sub_menu_level</code> will be better options.</p>
 
 <h3><strong>Active indication</strong></h3>
 
 <p><code>active_parent=&quot;boolean&quot;</code></p>
 
-<p>- specifies whether the immediate parent of the currently active section should be made &#8220;active&#8221; also. Default = &#8220;0&#8221; (No). If switched on then <code>active_class</code> will be applied to the parent&#8217;s section link and the class defined using <code>active_li_class</code> will be applied to the parent&#8217;s <code>&lt;li&gt;</code>.</p>
+<p>- specifies whether the immediate parent of the currently active section should be made &#8220;active&#8221; also. Default = &quot;0&quot; (No). If switched on then <code>active_class</code> will be applied to the parent&#8217;s section link and the class defined using <code>active_li_class</code> will be applied to the parent&#8217;s <code>&lt;li&gt;</code>.</p>
 
 <p><code>active_ancestors=&quot;boolean&quot;</code></p>
 
-<p>- specifies whether all ancestors of the currently active section should be made &#8220;active&#8221;. Default = &#8220;0&#8221; (No). If switched on then <code>active_class</code> will be applied to the ancestor&#8217;s section link and the class defined using <code>active_li_class</code> will be applied to the ancestor&#8217;s <code>&lt;li&gt;</code>. <em>Note that parents are ancestors, so <code>active_ancestors=&quot;1&quot;</code> gives you an active parent too</em>.</p>
+<p>- specifies whether all ancestors of the currently active section should be made &#8220;active&#8221;. Default = &quot;0&quot; (No). If switched on then <code>active_class</code> will be applied to the ancestor&#8217;s section link and the class defined using <code>active_li_class</code> will be applied to the ancestor&#8217;s <code>&lt;li&gt;</code>. <em>Note that parents are ancestors, so <code>active_ancestors=&quot;1&quot;</code> gives you an active parent too</em>.</p>
 
 <h3><strong>Titles</strong></h3>
 
 <p><code>default_title=&quot;text&quot;</code></p>
 
-<p>- title to be used for default section. Default = &#8220;Home&#8221;.</p>
+<p>- title to be used for default section. Default = &quot;Home&quot;.</p>
 
 <p><code>clone_title=&quot;text&quot;</code></p>
 
-<p>- the default title to be used for cloned sections, if no title has been specified in the admin tab. Default = &#8220;Summary&#8221;. <em><span class="caps">DEPRECATED</span> <span class="caps">ATTRIBUTE</span> &#8211; future versions will only use Clone titles entered in adi_menu admin.</em></p>
+<p>- the default title to be used for cloned sections, if no title has been specified in the admin tab. Default = &quot;Summary&quot;. <em><span class="caps">DEPRECATED</span> <span class="caps">ATTRIBUTE</span> &#8211; future versions will only use Clone titles entered in adi_menu admin.</em></p>
 
 <p><code>ignore_alt_title=&quot;boolean&quot;</code></p>
 
-<p>- alternative titles, if configured, normally take precedence.  Setting this attribute will force normal titles to be output. Default = &#8220;0&#8221; (use alternative title if available).</p>
+<p>- alternative titles, if configured, normally take precedence.  Setting this attribute will force normal titles to be output. Default = &quot;0&quot; (use alternative title if available).</p>
 
 <p><code>escape=&quot;method&quot;</code></p>
 
-<p>- convert characters in section titles to <span class="caps">HTML</span> entities. Default = &#8220;&#8221; (convert all applicable characters, using <span class="caps">UTF</span>-8 character set). Use &#8220;html&#8221; to convert all applicable characters using <span class="caps">ISO</span>-8859-1 character set only or &#8220;htmlspecial&#8221; to only convert special characters (&amp;, &#8220;, &#8216;, &lt;, &gt;).</p>
+<p>- convert characters in section titles to <span class="caps">HTML</span> entities. Default = &quot;&quot; (convert all applicable characters, using <span class="caps">UTF</span>-8 character set). Use &#8220;html&#8221; to convert all applicable characters using <span class="caps">ISO</span>-8859-1 character set only or &#8220;htmlspecial&#8221; to only convert special characters (&amp;, &#8220;, &#8216;, &lt;, &gt;).</p>
 
 <h3><strong>URLs</strong></h3>
 
@@ -205,47 +205,47 @@
 
 <p><code>default_first=&quot;boolean&quot;</code></p>
 
-<p>- specifies whether the default section should be listed first. Default = &#8220;1&#8221; (Yes).</p>
+<p>- specifies whether the default section should be listed first. Default = &quot;1&quot; (Yes).</p>
 
 <p><code>sort=&quot;sort values&quot;</code></p>
 
-<p>- the sort method to be used for sections. Default = &#8220;adi_menu_sort&#8221;, i.e. the order specified in adi_menu admin tab (or database order if all set to zero). Other options: &#8220;&#8221; - the order in which sections were originally added; &#8220;name&#8221; &#8211; alphabetical order; &#8220;adi_menu_sort, name&#8221; &#8211; use sort order, then if same use alphabetical order.</p>
+<p>- the sort method to be used for sections. Default = &quot;adi_menu_sort&quot;, i.e. the order specified in adi_menu admin tab (or database order if all set to zero). Other options: &#8220;&#8221; - the order in which sections were originally added; &#8220;name&#8221; &#8211; alphabetical order; &#8220;adi_menu_sort, name&#8221; &#8211; use sort order, then if same use alphabetical order.</p>
 
 <h3><strong>Submenus</strong></h3>
 
 <p><code>sub_menu=&quot;boolean&quot;</code></p>
 
-<p>- output a submenu starting with children of the currently active section . Default=&#8220;0&#8221; (complete menu generated).</p>
+<p>- output a submenu starting with children of the currently active section . Default = &quot;0&quot; (complete menu generated).</p>
 
 <p><code>sub_menu_level=&quot;level&quot;</code></p>
 
-<p>- the submenu level to be output, where &#8220;level&#8221; is 2 or more. Default=&#8220;0&#8221; (complete menu generated). This attribute is section-sensitive, so submenus are based on the ancestry of the currently active section. <em>Note that the first submenu is level 2.</em></p>
+<p>- the submenu level to be output, where &#8220;level&#8221; is 2 or more. Default = &quot;0&quot; (complete menu generated). This attribute is section-sensitive, so submenus are based on the ancestry of the currently active section. <em>Note that the first submenu is level 2.</em></p>
 
 <h3><strong>Articles</strong></h3>
 
 <p><code>articles=&quot;boolean&quot;</code></p>
 
-<p>- specifies whether articles should be included in the menu. Default = &#8220;0&#8221; (No).</p>
+<p>- specifies whether articles should be included in the menu. Default = &quot;0&quot; (No).</p>
 
 <p><code>article_position=&quot;position&quot;</code></p>
 
-<p>- defines where the articles should be displayed in relation to sections in submenus. Values: &#8220;after&#8221; (place articles after sections), &#8220;before&#8221; (place articles before sections), &#8220;dovetail&#8221; (interleaves articles and subsections alphabetically according to title). Default = &#8220;after&#8221;.</p>
+<p>- defines where the articles should be displayed in relation to sections in submenus. Values: &#8220;after&#8221; (place articles after sections), &#8220;before&#8221; (place articles before sections), &#8220;dovetail&#8221; (interleaves articles and subsections alphabetically according to title). Default = &quot;after&quot;.</p>
 
 <p><code>active_articles_only=&quot;boolean&quot;</code></p>
 
-<p>- set if you want articles listed for the currently active section/category only. Default = &#8220;0&#8221; (articles in all sections listed).</p>
+<p>- set if you want articles listed for the currently active section/category only. Default = &quot;0&quot; (articles in all sections listed).</p>
 
 <p><code>article_include=&quot;section list&quot;</code></p>
 
-<p>- comma separated list of sections that should have their articles included in the menu. Default = &#8220;&#8221; (all).</p>
+<p>- comma separated list of sections that should have their articles included in the menu. Default = &quot;&quot; (all).</p>
 
 <p><code>article_exclude=&quot;section list&quot;</code></p>
 
-<p>- comma separated list of sections that won&#8217;t have their articles included in the menu. Default = &#8220;&#8221; (none).</p>
+<p>- comma separated list of sections that won&#8217;t have their articles included in the menu. Default = &quot;&quot; (none).</p>
 
 <p><code>article_sort=&quot;sort values&quot;</code></p>
 
-<p>- specifies how articles under menu items should be sorted. Default = &#8220;Posted desc&#8221;. For database order use <code>article_sort=&quot;&quot;</code>. If used in conjunction with <code>article_position=&quot;dovetail&quot;</code> then only &#8220;Title&#8221;, &#8220;Title asc&#8221; or &#8220;Title desc&#8221; are recognised. <em>New article mode only.</em></p>
+<p>- specifies how articles under menu items should be sorted. Default = &quot;Posted desc&quot;. For database order use <code>article_sort=&quot;&quot;</code>. If used in conjunction with <code>article_position=&quot;dovetail&quot;</code> then only &#8220;Title&#8221;, &#8220;Title asc&#8221; or &#8220;Title desc&#8221; are recognised. <em>New article mode only.</em></p>
 
 <p>- section-specific article sorting is also available:</p>
 
@@ -261,15 +261,15 @@
 
 <p><code>cat_article_include=&quot;category list&quot;</code></p>
 
-<p>- comma separated list of categories that should have their articles included in the menu (placed under &#8220;sections&#8221; that have been redirected to those categories). Default = &#8220;&#8221; (all).</p>
+<p>- comma separated list of categories that should have their articles included in the menu (placed under &#8220;sections&#8221; that have been redirected to those categories). Default = &quot;&quot; (all).</p>
 
 <p><code>cat_article_exclude=&quot;category list&quot;</code></p>
 
-<p>- comma separated list of categories that won&#8217;t have their articles included in the menu (placed under &#8220;sections&#8221; that have been redirected to those categories). Default = &#8220;&#8221; (none).</p>
+<p>- comma separated list of categories that won&#8217;t have their articles included in the menu (placed under &#8220;sections&#8221; that have been redirected to those categories). Default = &quot;&quot; (none).</p>
 
 <p><code>cat_article_sort=&quot;sort values&quot;</code></p>
 
-<p>- specifies how articles under category parents should be sorted. Default = &#8220;&#8221; (i.e. same as &#8216;article_sort&#8217; attribute). For database order use <code>cat_article_sort=&quot;&quot;</code>. If used in conjunction with <code>article_position=&quot;dovetail&quot;</code> then only &#8220;Title&#8221;, &#8220;Title asc&#8221; or &#8220;Title desc&#8221; are recognised.</p>
+<p>- specifies how articles under category parents should be sorted. Default = &quot;&quot; (i.e. same as &#8216;article_sort&#8217; attribute). For database order use <code>cat_article_sort=&quot;&quot;</code>. If used in conjunction with <code>article_position=&quot;dovetail&quot;</code> then only &#8220;Title&#8221;, &#8220;Title asc&#8221; or &#8220;Title desc&#8221; are recognised.</p>
 
 <p>- category-specific article sorting is also available:</p>
 
@@ -287,89 +287,97 @@
 
 <p><code>wraptag=&quot;tag&quot;</code></p>
 
-<p>- the (X)HTML tag (without &#8216;&lt;&gt;&#8217; brackets) to wrap around the whole menu (including the label). Default = &#8220;&#8221; (no tag). <em>If there is no menu to output then no wraptag is generated.</em></p>
+<p>- the (X)HTML tag (without &#8216;&lt;&gt;&#8217; brackets) to wrap around the whole menu (including the label). Default = &quot;&quot; (no tag). <em>If there is no menu to output then no wraptag is generated.</em></p>
 
 <p><code>label=&quot;text&quot;</code></p>
 
-<p>- some text to precede the menu. Default = &#8220;&#8221; (no label). <em>If there is no menu to output then no label is generated.</em></p>
+<p>- some text to precede the menu. Default = &quot;&quot; (no label). <em>If there is no menu to output then no label is generated.</em></p>
 
 <p><code>labeltag=&quot;tag&quot;</code></p>
 
-<p>- the (X)HTML tag (without &#8216;&lt;&gt;&#8217; brackets) to wrap around the label. Default = &#8220;&#8221; (no tag).</p>
+<p>- the (X)HTML tag (without &#8216;&lt;&gt;&#8217; brackets) to wrap around the label. Default = &quot;&quot; (no tag).</p>
 
 <p><code>link_span=&quot;boolean&quot;</code></p>
 
-<p>- specifies whether the contents of the links should be wrapped in a span, i.e. <code>&lt;a&gt;&lt;span&gt;...&lt;/span&gt;&lt;/a&gt;</code>. Default = &#8220;0&#8221; (No).</p>
+<p>- specifies whether the contents of the links should be wrapped in a span, i.e. <code>&lt;a&gt;&lt;span&gt;...&lt;/span&gt;&lt;/a&gt;</code>. Default = &quot;0&quot; (No).</p>
 
 <p><code>list_span=&quot;boolean&quot;</code></p>
 
-<p>- specifies whether the contents of the <code>&lt;li&gt;</code> should be wrapped in a span, i.e. <code>&lt;li&gt;&lt;span&gt;&lt;a&gt;...&lt;/a&gt;&lt;/span&gt;&lt;/li&gt;</code>. Default = &#8220;0&#8221; (No).</p>
+<p>- specifies whether the contents of the <code>&lt;li&gt;</code> should be wrapped in a span, i.e. <code>&lt;li&gt;&lt;span&gt;&lt;a&gt;...&lt;/a&gt;&lt;/span&gt;&lt;/li&gt;</code>. Default = &quot;0&quot; (No).</p>
 
 <p><code>speaking_block=&quot;boolean&quot;</code></p>
 
-<p>- enables speaking blocks. Default = &#8220;0&#8221; (no speaking blocks). By default, speaking blocks are generated from the section&#8217;s <em>sticky</em> article excerpt.</p>
+<p>- enables speaking blocks. Default = &quot;0&quot; (no speaking blocks). By default, speaking blocks are generated from the section&#8217;s <em>sticky</em> article excerpt.</p>
 
 <p><code>speaking_block_form=&quot;form name&quot;</code></p>
 
-<p>- alternative form to be used for the speaking block. Default = &#8220;&#8221; (none).</p>
+<p>- alternative form to be used for the speaking block. Default = &quot;&quot; (none).</p>
 
 <p><code>suppress_url=&quot;mode&quot;</code></p>
 
-<p>- suppress the <span class="caps">URL</span> of the <code>href</code> attribute in a parent section link (i.e. set it to &#8220;#&#8221;). Set to &#8220;all&#8221; to suppress all parent section links, &#8220;top&#8221; to suppress top-level parent section links only or &#8220;active&#8221; to suppress currently active parents. Default= &#8220;&#8221; (do not suppress <span class="caps">URL</span>).</p>
+<p>- suppress the <span class="caps">URL</span> of the <code>href</code> attribute in a parent section link (i.e. set it to &#8220;#&#8221;). Set to &#8220;all&#8221; to suppress all parent section links, &#8220;top&#8221; to suppress top-level parent section links only or &#8220;active&#8221; to suppress currently active parents. Default = &quot;&quot; (do not suppress <span class="caps">URL</span>).</p>
 
 <p><code>role=&quot;role name&quot;</code></p>
 
-<p>- <span class="caps">ARIA</span> role attribute automatically added to menu&#8217;s wraptag when admin preference &#8220;Doctype&#8221; is HTML5. Default = &#8220;navigation&#8221;.</p>
+<p>- <span class="caps">ARIA</span> role attribute automatically added to menu&#8217;s wraptag when admin preference &#8220;Doctype&#8221; is HTML5. Default = &quot;navigation&quot;.</p>
 
 <h3><strong>Classes/IDs</strong></h3>
 
 <p><code>class=&quot;class name&quot;</code></p>
 
-<p>- class applied to the top level <code>&lt;ul&gt;</code>. Default = &#8220;section_list&#8221;.</p>
+<p>- class applied to the top level <code>&lt;ul&gt;</code>. Default = &quot;section_list&quot;.</p>
 
 <p><code>menu_id=&quot;id name&quot;</code></p>
 
-<p>- the ID to be used on the top level <code>&lt;ul&gt;</code>.  Default = &#8220;mainmenu&#8221;.</p>
+<p>- the ID to be used on the top level <code>&lt;ul&gt;</code>.  Default = &quot;mainmenu&quot;.</p>
 
 <p><code>wraptag_class=&quot;class name&quot;</code></p>
 
-<p>- the class to be used on the wraptag.  Default = &#8220;menu_wrapper&#8221;.</p>
+<p>- the class to be used on the wraptag.  Default = &quot;menu_wrapper&quot;.</p>
 
 <p><code>wraptag_id=&quot;id name&quot;</code></p>
 
-<p>- the ID to be used on the wraptag.  Default = &#8220;&#8221; (none).</p>
+<p>- the ID to be used on the wraptag.  Default = &quot;&quot; (none).</p>
 
 <p><code>label_class=&quot;class name&quot;</code></p>
 
-<p>- the class to be used on the label&#8217;s tag.  Default = &#8220;menu_label&#8221;.</p>
+<p>- the class to be used on the label&#8217;s tag.  Default = &quot;menu_label&quot;.</p>
 
 <p><code>label_id=&quot;id name&quot;</code></p>
 
-<p>- the ID to be used on the label&#8217;s tag.  Default = &#8220;&#8221; (none).</p>
+<p>- the ID to be used on the label&#8217;s tag.  Default = &quot;&quot; (none).</p>
 
 <p><code>active_class=&quot;class name&quot;</code></p>
 
-<p>- class applied to the current section (or category) link. Default = &#8220;active_class&#8221;.</p>
+<p>- class applied to the current section (or category) link. Default = &quot;active_class&quot;.</p>
 
 <p><code>active_li_class=&quot;class name&quot;</code></p>
 
-<p>- class applied to the current section (or category) <code>&lt;li&gt;</code> element. Default = &#8220;&#8221; (no class).</p>
+<p>- class applied to the current section (or category) <code>&lt;li&gt;</code> element. Default = &quot;&quot; (no class).</p>
 
 <p><code>parent_class=&quot;class name&quot;</code></p>
 
-<p>- the class to be used on section <code>&lt;li&gt;</code> that are parents. Default = &#8220;menuparent&#8221;.</p>
+<p>- the class to be used on section <code>&lt;li&gt;</code> that are parents. Default = &quot;menuparent&quot;.</p>
+
+<p><code>parent_link_class=&quot;class name&quot;</code></p>
+
+<p>- the class to be used on section  <code>&lt;a&gt;</code> that are parents. Default = &quot;&quot;.</p>
+
+<p><code>sub_menu_class=&quot;class name&quot;</code></p>
+
+<p>- class applied to all submenu  <code>&lt;ul&gt;</code>. Default = &quot;&quot;.</p>
 
 <p><code>list_id=&quot;boolean&quot;</code></p>
 
-<p>- specifies whether the <code>&lt;li&gt;</code> elements should have unique IDs applied. IDs are based on the section names. Default = &#8220;0&#8221; (No). Note that cloned section IDs will have a suffix of &#8220;_clone&#8221; added.</p>
+<p>- specifies whether the <code>&lt;li&gt;</code> elements should have unique IDs applied. IDs are based on the section names. Default = &quot;0&quot; (No). Note that cloned section IDs will have a suffix of &#8220;_clone&#8221; added.</p>
 
 <p><code>list_id_prefix=&quot;text&quot;</code></p>
 
-<p>- the prefix to be used for the <code>&lt;li&gt;</code> IDs. Default = &#8220;menu_&#8221;.</p>
+<p>- the prefix to be used for the <code>&lt;li&gt;</code> IDs. Default = &quot;menu_&quot;.</p>
 
 <p><code>list_prefix=&quot;string&quot;</code></p>
 
-<p>- string to be used as a prefix. Default = &#8220;&#8221; (no prefix). <em>Note: prefix is inserted within its own <code>&lt;span&gt;</code> (and <code>class</code>)</em>. For example:<br>
+<p>- string to be used as a prefix. Default = &quot;&quot; (no prefix). <em>Note: prefix is inserted within its own <code>&lt;span&gt;</code> (and <code>class</code>)</em>. For example:<br>
 <code>&lt;li&gt;&lt;span class=&quot;menu_prefix&quot;&gt;PREFIX&lt;/span&gt;&lt;a&gt;...&lt;/a&gt;&lt;/li&gt;</code><br>
 If <code>link_span</code> and <code>list_span</code> are also switched on, then the markup becomes:<br>
 <code>&lt;li&gt;&lt;span&gt;&lt;span class=&quot;menu_prefix&quot;&gt;PREFIX&lt;/span&gt;&lt;a&gt;&lt;span&gt;...&lt;/span&gt;&lt;/a&gt;&lt;/span&gt;&lt;/li&gt;</code><br>
@@ -377,23 +385,23 @@ If <code>link_span</code> and <code>list_span</code> are also switched on, then 
 
 <p><code>prefix_class=&quot;class name&quot;</code></p>
 
-<p>- class added to the list prefix <code>&lt;span&gt;...&lt;/span&gt;</code>. Default = &#8220;menu_prefix&#8221;.</p>
+<p>- class added to the list prefix <code>&lt;span&gt;...&lt;/span&gt;</code>. Default = &quot;menu_prefix&quot;.</p>
 
 <p><code>first_class=&quot;class name&quot;</code></p>
 
-<p>- the class to be used on the <em>first</em> <code>&lt;li&gt;</code> within a <code>&lt;ul&gt;</code>. Default = &#8220;&#8221; (no class). <em>Note that this class is applied to the first item of every level of the menu.</em></p>
+<p>- the class to be used on the <em>first</em> <code>&lt;li&gt;</code> within a <code>&lt;ul&gt;</code>. Default = &quot;&quot; (no class). <em>Note that this class is applied to the first item of every level of the menu.</em></p>
 
 <p><code>last_class=&quot;class name&quot;</code></p>
 
-<p>- the class to be used on the <em>last</em> <code>&lt;li&gt;</code> within a <code>&lt;ul&gt;</code>. Default = &#8220;&#8221; (no class). <em>Note that this class is applied to the last item of every level of the menu.</em></p>
+<p>- the class to be used on the <em>last</em> <code>&lt;li&gt;</code> within a <code>&lt;ul&gt;</code>. Default = &quot;&quot; (no class). <em>Note that this class is applied to the last item of every level of the menu.</em></p>
 
 <p><code>odd_even=&quot;boolean&quot;</code></p>
 
-<p>- add &#8220;menu_odd&#8221; &amp; &#8220;menu_even&#8221; classes to <code>&lt;li&gt;</code>.  Default = &#8220;0&#8221; (no odd/even classes).</p>
+<p>- add &#8220;menu_odd&#8221; &amp; &#8220;menu_even&#8221; classes to <code>&lt;li&gt;</code>.  Default = &quot;0&quot; (no odd/even classes).</p>
 
 <p><code>article_class=&quot;class name&quot;</code></p>
 
-<p>- the class applied to <code>&lt;li&gt;</code> elements that contain articles. Default = &#8220;menu_article&#8221;.</p>
+<p>- the class applied to <code>&lt;li&gt;</code> elements that contain articles. Default = &quot;menu_article&quot;.</p>
 
 <h2 id="adi_menu_info"><strong>adi_menu_info tag</strong></h2>
 
@@ -403,7 +411,7 @@ If <code>link_span</code> and <code>list_span</code> are also switched on, then 
 
 <p><code>sections=&quot;section list&quot;</code></p>
 
-<p>- comma separated list of sections to display info about. Default = &#8220;&#8221; (current section).</p>
+<p>- comma separated list of sections to display info about. Default = &quot;&quot; (current section).</p>
 
 <p><code>type=&quot;information type&quot;</code></p>
 
@@ -425,23 +433,23 @@ If <code>link_span</code> and <code>list_span</code> are also switched on, then 
 
 <p><code>wraptag=&quot;tag&quot;</code></p>
 
-<p>- <span class="caps">HTML</span> tag (without &#8216;&lt;&gt;&#8217; brackets) to wrap the items output from the <i>type</i> attribute. Default = &#8220;&#8221; (no tag).</p>
+<p>- <span class="caps">HTML</span> tag (without &#8216;&lt;&gt;&#8217; brackets) to wrap the items output from the <i>type</i> attribute. Default = &quot;&quot; (no tag).</p>
 
 <p><code>class=&quot;class name&quot;</code></p>
 
-<p>- <span class="caps">CSS</span> class attribute applied to the wraptag. Default = &#8220;&#8221; (no class).</p>
+<p>- <span class="caps">CSS</span> class attribute applied to the wraptag. Default = &quot;&quot; (no class).</p>
 
 <p><code>break=&quot;tag&quot;</code></p>
 
-<p>- the <span class="caps">HTML</span> tag (without &#8216;&lt;&gt;&#8217; brackets) or string to separate each type item. Default = &#8220;&#8221; (no tag).</p>
+<p>- the <span class="caps">HTML</span> tag (without &#8216;&lt;&gt;&#8217; brackets) or string to separate each type item. Default = &quot;&quot; (no tag).</p>
 
 <p><code>breakclass=&quot;class name&quot;</code></p>
 
-<p>- <span class="caps">CSS</span> class attribute applied to each break tag. Default = &#8220;&#8221; (no class).</p>
+<p>- <span class="caps">CSS</span> class attribute applied to each break tag. Default = &quot;&quot; (no class).</p>
 
 <p><code>escape=&quot;method&quot;</code></p>
 
-<p>- convert characters in section titles to <span class="caps">HTML</span> entities. Default = &#8220;&#8221; (convert all applicable characters, using <span class="caps">UTF</span>-8 character set). Use &#8220;html&#8221; to convert all applicable characters using <span class="caps">ISO</span>-8859-1 character set only or &#8220;htmlspecial&#8221; to only convert special characters (&amp;, &#8220;, &#8216;, &lt;, &gt;).</p>
+<p>- convert characters in section titles to <span class="caps">HTML</span> entities. Default = &quot;&quot; (convert all applicable characters, using <span class="caps">UTF</span>-8 character set). Use &#8220;html&#8221; to convert all applicable characters using <span class="caps">ISO</span>-8859-1 character set only or &#8220;htmlspecial&#8221; to only convert special characters (&amp;, &#8220;, &#8216;, &lt;, &gt;).</p>
 
 <h2 id="adi_menu_if_info"><strong>adi_menu_if_info tag</strong></h2>
 
@@ -451,7 +459,7 @@ If <code>link_span</code> and <code>list_span</code> are also switched on, then 
 
 <p><code>sections=&quot;section list&quot;</code></p>
 
-<p>- comma separated list of sections to be tested. Default = &#8220;&#8221; (current section).</p>
+<p>- comma separated list of sections to be tested. Default = &quot;&quot; (current section).</p>
 
 <p><code>type=&quot;information type&quot;</code></p>
 
@@ -474,7 +482,7 @@ If <code>link_span</code> and <code>list_span</code> are also switched on, then 
 
 <p><code>value=&quot;value text&quot;</code></p>
 
-<p>- the value that you want to check against.  Default = &#8220;&#8221; (any non-blank value).</p>
+<p>- the value that you want to check against.  Default = &quot;&quot; (any non-blank value).</p>
 
 <h2><strong>adi_menu_info/adi_menu_if_info examples</strong></h2>
 
@@ -526,7 +534,7 @@ If <code>link_span</code> and <code>list_span</code> are also switched on, then 
 
 <p><code>labeltag=&quot;tag&quot;</code></p>
 
-<p>- the (X)HTML tag (without &#8216;&lt;&gt;&#8217; brackets) to wrap around the label. Default = &#8220;&#8221; (no tag).</p>
+<p>- the (X)HTML tag (without &#8216;&lt;&gt;&#8217; brackets) to wrap around the label. Default = &quot;&quot; (no tag).</p>
 
 <p><code>separator=&quot;text&quot;</code></p>
 
@@ -534,35 +542,35 @@ If <code>link_span</code> and <code>list_span</code> are also switched on, then 
 
 <p><code>title=&quot;boolean&quot;</code></p>
 
-<p>- specifies whether the section titles or alternative titles should be used. Default = &#8220;1&#8221; (Yes).</p>
+<p>- specifies whether the section titles or alternative titles should be used. Default = &quot;1&quot; (Yes).</p>
 
 <p><code>default_title=&quot;text&quot;</code></p>
 
-<p>- the title to be used for the &#8216;default&#8217; section. Default = &#8220;Home&#8221;</p>
+<p>- the title to be used for the &#8216;default&#8217; section. Default = &quot;Home&quot;</p>
 
 <p><code>ignore_alt_title=&quot;boolean&quot;</code></p>
 
-<p>- alternative section titles, if configured, are normally used. Default = &#8220;0&#8221; (No).</p>
+<p>- alternative section titles, if configured, are normally used. Default = &quot;0&quot; (No).</p>
 
 <p><code>link=&quot;boolean&quot;</code></p>
 
-<p>- specifies whether the sections should links or not. Default = &#8220;1&#8221; (Yes).</p>
+<p>- specifies whether the sections should links or not. Default = &quot;1&quot; (Yes).</p>
 
 <p><code>linkclass=&quot;class name&quot;</code></p>
 
-<p>- the <span class="caps">CSS</span> class assigned to the breadcrumb links. Default = &#8220;noline&#8221;.</p>
+<p>- the <span class="caps">CSS</span> class assigned to the breadcrumb links. Default = &quot;noline&quot;.</p>
 
 <p><code>link_last=&quot;boolean&quot;</code></p>
 
-<p>- specifies whether the last section crumb in list (i.e. the current section) should be a link or not. Only applies in article list mode. Default = &#8220;0&#8221; (No).</p>
+<p>- specifies whether the last section crumb in list (i.e. the current section) should be a link or not. Only applies in article list mode. Default = &quot;0&quot; (No).</p>
 
 <p><code>include_default=&quot;boolean&quot;</code></p>
 
-<p>- specifies whether the &#8216;default&#8217; section should be output. Default = &#8220;1&#8221; (Yes).</p>
+<p>- specifies whether the &#8216;default&#8217; section should be output. Default = &quot;1&quot; (Yes).</p>
 
 <p><code>escape=&quot;method&quot;</code></p>
 
-<p>- convert characters in section titles to <span class="caps">HTML</span> entities. Default = &#8220;&#8221; (convert all applicable characters, using <span class="caps">UTF</span>-8 character set). Use &#8220;html&#8221; to convert all applicable characters using <span class="caps">ISO</span>-8859-1 character set only or &#8220;htmlspecial&#8221; to only convert special characters (&amp;, &#8220;, &#8216;, &lt;, &gt;).</p>
+<p>- convert characters in section titles to <span class="caps">HTML</span> entities. Default = &quot;&quot; (convert all applicable characters, using <span class="caps">UTF</span>-8 character set). Use &#8220;html&#8221; to convert all applicable characters using <span class="caps">ISO</span>-8859-1 character set only or &#8220;htmlspecial&#8221; to only convert special characters (&amp;, &#8220;, &#8216;, &lt;, &gt;).</p>
 
 <h3><strong>Breadcrumb trail example</strong></h3>
 

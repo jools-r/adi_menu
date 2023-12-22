@@ -345,6 +345,14 @@ h3. *Classes/IDs*
 
 - the class to be used on section @<li>@ that are parents. Default = "menuparent".
 
+@parent_link_class="class name"@
+
+- the class to be used on section @<a>@ that are parents. Default = "".
+
+@sub_menu_class="class name"@
+
+- class applied to all submenu @<ul>@. Default = "".
+
 @list_id="boolean"@
 
 - specifies whether the @<li>@ elements should have unique IDs applied. IDs are based on the section names. Default = "0" (No). Note that cloned section IDs will have a suffix of "_clone" added.

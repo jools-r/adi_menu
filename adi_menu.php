@@ -10,10 +10,20 @@
     Released under the GNU General Public License
 
     Version history:
+    1.5     - TXP 4.7+ only
+            - attributes removed: 'test', 'new_article_mode', 'sep'
+            - new: link names shown in redirect link select list
+            - new: attributes 'parent_link_class', 'sub_menu_class' & 'sub_menu_link_class' (for demoncleaner)
+            - new: admin tab paging (for wavesource, kees-b, Bruce Bowden and me)
+            - improvement: admin tab style tweaks
+            - fix: pageless sections ignored (4.8+)
+            - fix: title_no_widow error in articles mode (4.8+)
+            - fix: db table settings tweaks (thanks Bruce Bowden)
+            - fix: admin tab section list fiddling plays nicely with bot_wtc (thanks demoncleaner)
     1.4.2   - include textpacks within plugin; remove remote install facility
             - remove unneeded options panel
             - TXP 4.6+ only
-    1.4.1   - new feature: relative_urls: link URLs without domain name and http(s) prefix
+    1.4.1   - new: relative_urls attribute: link URLs without domain name and http(s) prefix (for demoncleaner)
             - fix: uncaught type error in PHP 8.2
     1.4     - new feature: virtual sections
             - new categories features:
@@ -151,18 +161,8 @@
 
 /* TODO
 
-    - kill off clone column (presence of clone title will signify clone or not)
-    - kill off attributes deprecated in 1.4
-    - use pluggable_ui for adi_menu_article_tab()
-    - general purpose custom html attribute, e.g. data-xyz="abc" (configurable per section in admin)
     - deprecate old submenu method (probably just need to stop talking about it)
-    - make section_list array element names consistent ('adi_menu_parent' -> 'parent')
-    - adi_menu_reborn
-        - cull attributes
-        - a_m_prune does all the heavy lifting, lose the acres of globals
-        - use generic term "menu item" instead of section
-        - container tag/user defineable form
-        - well defined menu/submenu scenarios & a_m recipes
+    - demoncleaner's enhancements
 
 */
 
@@ -207,9 +207,9 @@ $adi_menu_vs_prefix = 'v_'; // prefix for virtual sections (used in parent field
 //    category redirect   adi_menu_redirect_category    category
 //    sort                adi_menu_sort                 sort
 
-$adi_menu_sql_fields = 'name,title,adi_menu_parent,adi_menu_title,adi_menu_exclude,adi_menu_clone,adi_menu_sort,adi_menu_redirect_section,adi_menu_redirect_link,adi_menu_redirect_category,adi_menu_alt_title';
+$adi_menu_sql_fields = 'name, title, adi_menu_parent, adi_menu_title, adi_menu_exclude, adi_menu_clone, adi_menu_sort, adi_menu_redirect_section, adi_menu_redirect_link, adi_menu_redirect_category, adi_menu_alt_title';
 
-$adi_menu_vs_sql_fields = 'id as adi_menu_id,name,title,parent as adi_menu_parent,exclude as adi_menu_exclude,sort as adi_menu_sort,section as adi_menu_redirect_section,link as adi_menu_redirect_link,category as adi_menu_redirect_category,alt_title as adi_menu_alt_title,clone as adi_menu_clone,clone_title as adi_menu_title';
+$adi_menu_vs_sql_fields = 'id as adi_menu_id, name, title, parent as adi_menu_parent, exclude as adi_menu_exclude, sort as adi_menu_sort, section as adi_menu_redirect_section, link as adi_menu_redirect_link, category as adi_menu_redirect_category, alt_title as adi_menu_alt_title, clone as adi_menu_clone, clone_title as adi_menu_title';
 
 // menu info type to DB column mapping - used by <txp:adi_menu_info /> & <txp:adi_menu_if_info /> tags
 $adi_menu_info_types =
@@ -232,15 +232,15 @@ $adi_menu_info_types =
     );
 
 if (txpinterface === 'admin') {
-    // it's a modern world
-    if (!version_compare(txp_version, '4.6-dev', '>=')) return;
+    // it's a modern-ish world
+    if (!version_compare(txp_version, '4.7.0', '>=')) return;
 
     adi_menu_init();
 }
 
 function adi_menu_init() {
 // general admin setup
-    global $prefs, $event, $adi_menu_prefs, $adi_menu_debug, $adi_menu_db_debug, $adi_menu_sed_sf_installed;
+    global $prefs, $event, $adi_menu_prefs, $adi_menu_debug, $adi_menu_db_debug;
 
     $adi_menu_installed = adi_menu_installed();
 
@@ -254,78 +254,585 @@ function adi_menu_init() {
     $adi_menu_prefs = array(
         'write_tab_select_indent'    => '0', // or 0
         'write_tab_select_format'    => 'name', // or 'title'
-        'write_tab_select_default'   => '0', // or 1
+        'write_tab_select_default'   => '0', // or not
+        'admin_pageby'               => 12,
     );
 
     // adi_menu admin tab under 'Presentation'
     if ($adi_menu_installed) {
         register_tab('presentation', 'adi_menu_admin', gtxt('adi_menu'));
         register_callback('adi_menu_admin', 'adi_menu_admin');
-        if ((adi_menu_prefs('write_tab_select_format') != 'name') || adi_menu_prefs('write_tab_select_indent')) //??? TEST ON NEW INSTALLS
-            register_callback('adi_menu_article_tab', 'article_ui', 'section');
+        if ((adi_menu_prefs('write_tab_select_format') != 'name') || adi_menu_prefs('write_tab_select_indent'))
+            register_callback('adi_menu_section_titles', 'article_ui', 'section');
     }
-
-    // check out other plugins & their versions
-    if ($adi_menu_installed)
-        $adi_menu_sed_sf_installed = safe_row("version", "txp_plugin", "status = 1 AND name='sed_section_fields'", $adi_menu_db_debug);
 
     // style
     if ($event == 'adi_menu_admin')
-        register_callback('adi_menu_style','admin_side','head_end');
+        register_callback('adi_menu_style', 'admin_side', 'head_end');
 
     // script
     if ($event == 'adi_menu_admin')
-        register_callback('adi_menu_admin_script','admin_side','head_end');
+        register_callback('adi_menu_admin_script', 'admin_side', 'head_end');
+}
+
+function adi_menu_admin_script() {
+// jQuery magic for admin tab
+
+    $section_list = adi_menu_section_list('', '', TRUE);
+    $sort_value_jquery = '';
+    foreach ($section_list as $name => $section) {
+        $sort_value_jquery .= '$("#mainmenu li#'.$name.' > input").attr("value","'.$section['adi_menu_sort'].'");'.n;
+        if ($section['adi_menu_exclude'])
+            $sort_value_jquery .= '$("#mainmenu li#'.$name.'").addClass("adi_menu_excluded");'.n;
+    }
+
+    $button_text = gTxt('adi_menu_update_order');
+
+    $ui_script = '';
+
+    echo <<<END_SCRIPT
+<!-- drag and drop -->
+$ui_script
+<script>
+    // adi_menu
+    $(function() {
+        $('form.adi_menu_form #list .adi_menu_sort').hide(); // hide sort value column
+        $('#adi_menu_summary').addClass('adi_menu_drag_drop');
+
+        $("#mainmenu").wrap('<form class="adi_menu_summary" action="index.php#adi_menu_summary" method="post"></form>');
+        $("#mainmenu li").each(function(){
+            var this_id = $(this).attr('id');
+            $(this).append('<input type="hidden" value="" class="sort_value" />');
+            $('input',this).attr('name','sort['+this_id+']');
+        });
+        $("#mainmenu li.menu_virtual").each(function(){
+            var this_id = $(this).attr('id');
+            $(this).children('input').attr('name','virtual_sort['+this_id+']'); // immediate children
+        });
+
+        $sort_value_jquery
+
+        $("form.adi_menu_summary").append('<input type="hidden" name="event" value="adi_menu_admin" />');
+        $("form.adi_menu_summary").append('<input type="hidden" name="step" value="sort_update" />');
+        $("form.adi_menu_summary").append('<input class="smallerbox" type="submit" name="do_something" value="$button_text" />');
+        $("#mainmenu").sortable({
+            items: "li",
+            opacity: 0.6,
+//                 cursor: 'move',
+            containment: 'form.adi_menu_summary',
+            grid: [10, 10],
+//                 connectWith: ".connectedSortable"
+        });
+        // update sort values
+        $("#mainmenu").bind("sortstop",function(event, ui) {
+            $('input.sort_value').each(function(i) { // renumber sort values
+                var this_input = $(this);
+                this_input.val(i+1);
+            });
+        });
+        // auto toggle strikethrough class when click tick "exclude"
+        $("tr td input.checkbox").click(function(){
+            tr = $(this).parent().parent();
+            $(tr).find(">:first-child a").toggleClass("adi_menu_excluded"); // section name
+            $(tr).find(">:nth-child(2) span").toggleClass("adi_menu_excluded"); // title
+            $(tr).find(">:nth-child(3) input").toggleClass("adi_menu_excluded"); // alternative title
+            $(tr).find(">:nth-child(8) input").toggleClass("adi_menu_excluded"); // clone title
+        });
+    });
+</script>
+END_SCRIPT;
+}
+
+function adi_menu_style() {
+// some style for the admin page
+
+    echo
+        '<style type="text/css">
+            /* adi_menu */
+            .adi_menu_warning { margin:1em; text-align:center }
+            .adi_menu_form h1 { display:none }
+            .adi_menu_form input.publish { margin-top:1em }
+            .adi_menu_form table tr:nth-child(2n) { background-color:#eee }
+            .adi_menu_form td:nth-child(3) input { font-style:italic } /* alt title */
+            .adi_menu_form td:nth-child(4), .adi_menu_form td:nth-child(7) { text-align:center } /* exclude & clone */
+            .adi_menu_form input[type=text] { width:10em }
+            .adi_menu_form select { width:10em }
+            .adi_menu_hide { display:none }
+            #adi_menu_summary { margin:2em 0 2em; padding:1em 0 2em; border:solid #ccc; border-width:0.1em 0 0 }
+            #adi_menu_summary ul li li { margin-left:2em }
+            #adi_menu_summary .adi_menu_key span { color:#004cbf }
+            #adi_menu_summary .menu_redirect > a { font-weight:bold }
+            #adi_menu_summary .menu_alt_title > a { font-style:italic }
+            #adi_menu_summary .menu_virtual > a:before { content:"\0022" }
+            #adi_menu_summary .menu_virtual > a:after { content:"\0022" }
+            #adi_menu_summary ul { margin-bottom:0.5em } /* helps drag&drop */
+            #adi_menu_summary #mainmenu { margin-bottom:2em } /* helps drag&drop */
+            #adi_menu_summary.adi_menu_drag_drop ul li { list-style-type:none }
+            #adi_menu_summary.adi_menu_drag_drop ul li:before { content: "\2195\00a0"; }
+/*			.adi_menu_summary_note_drag_drop { display:none }
+            #adi_menu_summary.adi_menu_drag_drop .adi_menu_summary_note_drag_drop { display:block } */
+            .adi_menu_excluded, #adi_menu_summary .adi_menu_key span span, #adi_menu_summary li.adi_menu_excluded > a { color:#aaa }
+        </style>';
+}
+
+function adi_menu_strip_prefix($text) {
+// strip "v_" from front of supplied text
+    global $adi_menu_vs_prefix;
+
+    $text = trim($text);
+    return (strpos($text, $adi_menu_vs_prefix) === 0) ? substr($text, strlen($adi_menu_vs_prefix)) : $text;
+}
+
+function adi_menu_is_virtual($name) {
+// section deemed to be virtual if:
+//        - its 'adi_menu_id' value in section_list is not NULL (i.e. set to 'adi_menu' table row id )
+//        - OR if not found in $section_list & its name begins with "v_"
+    global $section_list, $adi_menu_vs_prefix;
+
+    $name = trim($name);
+    if (isset($section_list[$name])) // requested section found is known
+        return ($section_list[$name]['adi_menu_id'] !== NULL);
+    else // requested section not found, so based verdict on its name
+        return (strpos(trim($name), $adi_menu_vs_prefix) === 0);
+}
+
+function adi_menu_display_settings($input_sections, $all_sections, $hide_links, $hide_cats) {
+// generate section's table row in admin settings table
+    global $prefs;
+
+    $out = '';
+
+    // determine last key of sections arrays (PHP 7's array_key_last would be handy here)
+    $last_input_keys = array_keys($input_sections);
+    $last_input_key = end($last_input_keys);
+    $last_all_keys = array_keys($all_sections);
+    $last_all_key = end($last_all_keys);
+
+    // count virtual sections
+    $vs_count = safe_count('adi_menu', '1=1');
+
+    // add new virtual section input fields (on last page of sections)
+    if ($last_input_key == $last_all_key) {
+        $input_sections[0]['adi_menu_id'] = 0; // zero = add new virtual section
+        $input_sections[0]['name'] = '';
+        $input_sections[0]['title'] = '';
+        $input_sections[0]['adi_menu_parent'] = '';
+        $input_sections[0]['adi_menu_title'] = '';
+        $input_sections[0]['adi_menu_exclude'] = 0;
+        $input_sections[0]['adi_menu_clone'] = 0;
+        $input_sections[0]['adi_menu_sort'] = 255; // the maximum value for an INT(3)
+        $input_sections[0]['adi_menu_redirect_section'] = '';
+        $input_sections[0]['adi_menu_redirect_link'] = '';
+        $input_sections[0]['adi_menu_alt_title'] = '';
+        $input_sections[0]['adi_menu_redirect_category'] = '';
+    }
+
+    foreach ($input_sections as $index => $section) {
+        $id = $section['adi_menu_id']; // NULL = normal section, number = virtual section, zero = add new virtual section
+        $name = $section['name'];
+        $title = $section['title'];
+        $parent = $section['adi_menu_parent'];
+        $clone_title = $section['adi_menu_title'];
+        $exclude = $section['adi_menu_exclude'];
+        $clone = $section['adi_menu_clone'];
+        $sort = $section['adi_menu_sort'];
+        $redirect_section = $section['adi_menu_redirect_section'];
+        $redirect_link = $section['adi_menu_redirect_link'];
+        $alt_title = $section['adi_menu_alt_title'];
+        $redirect_category = $section['adi_menu_redirect_category'];
+        $out .= tr(
+            // section name/link to section tab (normal sections) OR input field (virtual sections)
+            ($id === NULL
+                ? tda(eLink('section', 'section_edit', 'name', $index, $index, '', '', '', ($exclude ? 'adi_menu_excluded' : '')))
+                : tda(finput('text', "name[$index]", $name, ($exclude ? 'adi_menu_excluded' : ''), '', '', 0, 0, 'adi_menu_new_virtual', FALSE, FALSE, gTxt('adi_menu_virtual_section_new')))
+            )
+            // section title (input field for virtual sections)
+            .tda(
+                ($id !== NULL
+                    ? finput("text", "title[$index]", $title, ($exclude ? 'adi_menu_excluded' : ''))
+                    : span(htmlspecialchars($title), ($exclude ? ' class="adi_menu_excluded"' : ''))
+                )
+                .hinput("id[$index]", $id)
+            )
+            .tda(finput("text", "alt_title[$index]", $alt_title, ($exclude ? 'adi_menu_excluded' : '')))
+            .tda(checkbox("exclude[$index]", "1", $exclude))
+            .tda(adi_menu_section_popup($all_sections, $index, "parent[$index]", $parent, $vs_count))
+            .tda(finput("text", "sort[$index]", $sort, '', '', '', 4), ' class="adi_menu_sort"') // hidden if jQuery-UI is available
+            .tda(checkbox("clone[$index]", "1", $clone))
+            .tda(finput("text", "clone_title[$index]", $clone_title, ($exclude ? 'adi_menu_excluded' : '')))
+            .tda(adi_menu_section_popup($all_sections, $index, "redirect_section[$index]", $redirect_section, $vs_count))
+            .tda(adi_menu_link_popup("redirect_link[$index]", $redirect_link))
+            .tda(adi_menu_category_popup("redirect_category[$index]", $redirect_category), $hide_cats) // may be hidden if there're no categories defined
+            .tda(adi_menu_delete_button($id, $name))
+        );
+    }
+
+    return $out;
+}
+
+function adi_menu_section_popup($section_list, $this_section, $select_name, $value, $vs_count) {
+// generate section/virtual section popup list for admin settings table
+    $out = '<option value=""></option>';
+
+    $og_preamble = '<optgroup label="Sections">';
+    $vs_og_preamble = '<optgroup label="Virtual Sections">';
+    $og_postamble = '</optgroup>';
+    if ($vs_count == 0) // only group sections if there're some virtuals
+        $og_preamble = $vs_og_preamble = $og_postamble = '';
+
+    $vs_found = FALSE;
+
+    if ($section_list) {
+        $out .= $og_preamble;
+        foreach ($section_list as $section_name => $section) {
+            if ($section_name) { // don't want section "0" (i.e. the "new" virtual section)
+                $disabled = $selected = '';
+                if ($this_section && ($section_name == $this_section)) // if it's not new virtual section ($this_section = 0), prevent loop
+                    $disabled = ' disabled="disabled"'; // don't want to offer section as a parent of (or redirect to) itself
+                if ($section_name == $value)
+                    $selected = ' selected="selected"';
+                if (!$vs_found && ($section['adi_menu_id'] !== NULL)) { // virtual sections subheading
+                    $vs_found = TRUE;
+                    $out .= $og_postamble.$vs_og_preamble;
+                }
+                if ($vs_found)
+                    // value includes prefix (i.e. virtual section name), label shouldn't
+                    $out .= '<option value="'.$section_name.'"'.$disabled.$selected.' class="adi_menu_virtual">'.adi_menu_strip_prefix($section_name).'</option>';
+                else
+                    $out .= '<option value="'.$section_name.'"'.$disabled.$selected.'>'.$section_name.'</option>';
+            }
+        }
+        $out .= $og_postamble;
+    }
+
+    return tag($out, 'select', ' name="'.$select_name.'"');
+}
+
+function adi_menu_link_popup($select_name, $value) {
+// generate link popup list for admin settings table
+// TODO - make this non-DB like section_popup
+
+    $rs = safe_rows('id, linkname', 'txp_link', '1=1');
+    if ($rs)
+        return selectInput($select_name, array_combine(array_column($rs, 'id'), array_column($rs, 'linkname')), $value, TRUE);
+
+    return FALSE;
+}
+
+function adi_menu_category_popup($select_name, $value) {
+// generate category popup list for admin settings table
+// TODO - make this non-DB like section_popup
+
+    $rs = safe_column('name', 'txp_category', 'name != "root" AND type="article"');
+    if ($rs)
+        return selectInput($select_name, $rs, $value, TRUE);
+
+    return FALSE;
+}
+
+function adi_menu_delete_button($id, $name) {
+// virtual section delete button [X]
+    if ($id)
+        return dLink('adi_menu_admin', 'delete', 'name', $name, '',  '', '', 1);
+    return sp;
+}
+
+function adi_menu_table_found($table) {
+// see if supplied table is present
+    $rs = safe_query("SHOW TABLES LIKE '".safe_pfx($table)."'");
+    $a = nextRow($rs);
+
+    return ($a ? TRUE : FALSE);
+}
+
+function adi_menu_column_found($column, $table = 'txp_section') {
+// check for presence of a column in a table
+    global $adi_menu_db_debug;
+
+    $rs = safe_query('SHOW FIELDS FROM '.safe_pfx($table)." LIKE '".$column."'", $adi_menu_db_debug); // find out if column exists
+    $a = nextRow($rs);
+
+    return !empty($a);
+}
+
+function adi_menu_installed() {
+// if 'adi_menu_parent' column present then assume adi_menu is installed
+
+    return(adi_menu_column_found('adi_menu_parent'));
+}
+
+function adi_menu_install() {
+// add adi_menu's columns to txp_section table
+    global $adi_menu_db_debug;
+
+    if (adi_menu_installed())
+        return TRUE;
+    else // add basic columns to txp_section
+        return safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_parent VARCHAR(128) DEFAULT ''", $adi_menu_db_debug)
+            && safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_title VARCHAR(128) DEFAULT ''", $adi_menu_db_debug) // clone title
+            && safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_exclude TINYINT(1) DEFAULT 0 NOT NULL", $adi_menu_db_debug)
+            && safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_clone TINYINT(1) DEFAULT 0 NOT NULL", $adi_menu_db_debug)
+            && safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_sort TINYINT(3) UNSIGNED DEFAULT 0 NOT NULL", $adi_menu_db_debug); // sort value only goes up to 255
+// 			&& safe_update('txp_section', 'adi_menu_exclude = 0', "page != ''", $adi_menu_db_debug);
+            // as of v1.5, adi_menu_exclude defaults to 1 but on install set all non-pageless section to include (adi_menu_exclude=0)
+            // - sections added after install will need to be manually included
+}
+
+function adi_menu_uninstall() {
+// remove adi_menu's columns from txp_section table
+    global $adi_menu_db_debug;
+
+    // remove columns
+    $res = safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_parent", $adi_menu_db_debug)
+        && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_title", $adi_menu_db_debug)
+        && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_exclude", $adi_menu_db_debug)
+        && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_clone", $adi_menu_db_debug)
+        && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_sort", $adi_menu_db_debug);
+    if (adi_menu_column_found('adi_menu_redirect_section')) // remove version 1.0 columns
+        $res = $res
+            && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_redirect_section", $adi_menu_db_debug)
+            && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_redirect_link", $adi_menu_db_debug);
+    if (adi_menu_column_found('adi_menu_accesskey')) // remove version 1.0beta only columns
+        $res = $res
+            && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_accesskey", $adi_menu_db_debug)
+            && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_tabindex", $adi_menu_db_debug);
+    if (adi_menu_column_found('adi_menu_alt_title')) // remove version 1.1 columns
+        $res = $res && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_alt_title", $adi_menu_db_debug);
+    if (adi_menu_column_found('adi_menu_redirect_category')) { // remove version 1.4 column & adi_menu_table
+        $res = $res && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_redirect_category", $adi_menu_db_debug);
+        $res = $res && safe_query("DROP TABLE ".safe_pfx('adi_menu'), $adi_menu_db_debug);
+    }
+    // delete preferences
+    $res = $res && safe_delete('txp_prefs', "name LIKE 'adi_menu_%'", $adi_menu_db_debug);
+
+    return $res;
+}
+
+function adi_menu_upgrade($do_upgrade = FALSE) {
+// add additional adi_menu columns to txp_section table, if required
+    global $DB, $adi_menu_debug, $adi_menu_db_debug, $adi_menu_sql_fields;
+
+    if ($adi_menu_debug) echo __FUNCTION__.'():'.br;
+
+    if (adi_menu_installed()) {
+        // record the number of 'default' articles
+        $rs = safe_rows('id', 'textpattern', "section='default'");
+        adi_menu_prefs('write_tab_select_default', count($rs));
+        // version 1.0 - new columns (adi_menu_redirect_section & adi_menu_redirect_link)
+        $v1_0 = !adi_menu_column_found('adi_menu_redirect_section');
+        // version 1.1 - new column (adi_menu_alt_title)
+        $v1_1 = !adi_menu_column_found('adi_menu_alt_title');
+        // version 1.4 - new column (adi_menu_redirect_category), new adi_menu table, sort value tweaks
+        $v1_4 = !adi_menu_column_found('adi_menu_redirect_category');
+        $v1_4s = $v1_5t = $v1_5 = FALSE;
+        // adi_menu table is actually an upgrade, check that it exists
+        if (adi_menu_table_found('adi_menu')) {
+            // version 1.4 supplemental - add clone columns to adi_menu table
+            $v1_4s = !adi_menu_column_found('clone_title', 'adi_menu');
+            // version 1.5 - table checks
+            extract($DB->table_options); // $charset, $collate, $engine
+            $rs = safe_query("SHOW TABLE STATUS LIKE '".safe_pfx('adi_menu')."'", $adi_menu_db_debug);
+            extract(nextRow($rs));
+            if ($adi_menu_debug) echo "TXP charset=$charset, collate=$collate, engine=$engine ... adi_menu collate=$Collation, plugin_engine=$Engine".br;
+            $v1_5t = ($Collation && $Engine && (($Collation != $collate) || ($Engine != $engine)));
+            // new default for adi_menu_exclude (0 -> 1)
+// 			$rs = safe_query("SHOW COLUMNS FROM ".safe_pfx('txp_section')." LIKE 'adi_menu_exclude'", $adi_menu_db_debug);
+// 			extract(nextRow($rs));
+// 			$v1_5 = !$Default;
+        }
+// 		$upgrade_required = $v1_0 || $v1_1 || $v1_4 || $v1_4s || $v1_5t || $v1_5;
+// 		if ($adi_menu_debug) echo "v1_0=$v1_0, v1_1=$v1_1, v1_4=$v1_4, v1_4s=$v1_4s, v1_5t=$v1_5t, v1_5=$v1_5";
+        $upgrade_required = $v1_0 || $v1_1 || $v1_4 || $v1_4s || $v1_5t;
+        if ($adi_menu_debug) echo "v1_0=$v1_0, v1_1=$v1_1, v1_4=$v1_4, v1_4s=$v1_4s, v1_5t=$v1_5t";
+        if ($do_upgrade) {
+            if ($upgrade_required) {
+                $res = TRUE;
+                if ($v1_0)
+                    $res = safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_redirect_section VARCHAR(128) DEFAULT ''", $adi_menu_db_debug)
+                        && safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_redirect_link TINYINT(3) UNSIGNED DEFAULT 0 NOT NULL", $adi_menu_db_debug);
+                if ($v1_1)
+                    $res = $res && safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_alt_title VARCHAR(128) DEFAULT ''", $adi_menu_db_debug);
+                if ($v1_4) {
+                    $res = $res && safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_redirect_category VARCHAR(128) DEFAULT ''", $adi_menu_db_debug);
+                    safe_create('adi_menu', "
+                            id          INT             NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                            name        VARCHAR(128)    NOT NULL,
+                            title       VARCHAR(255)    NOT NULL DEFAULT '',
+                            alt_title   VARCHAR(255)    NOT NULL DEFAULT '',
+                            parent      VARCHAR(128)    NOT NULL DEFAULT '',
+                            clone       TINYINT(1)      NOT NULL DEFAULT 0,
+                            clone_title VARCHAR(255)    NOT NULL DEFAULT '',
+                            exclude     TINYINT(1)      NOT NULL DEFAULT 0,
+                            sort        TINYINT(3)      UNSIGNED NOT NULL DEFAULT 255,
+                            section     VARCHAR(128)    NOT NULL DEFAULT '',
+                            link        TINYINT(3)      UNSIGNED NOT NULL DEFAULT 0,
+                            category    VARCHAR(128)    NOT NULL DEFAULT ''
+                        ",
+                        '', // no options
+                        $adi_menu_db_debug
+                    );
+                    // force unique sort values (using $rs array index from "0") to ensure later use of (unstable) uasort doesn't cause problems
+                    $rs = safe_rows($adi_menu_sql_fields, 'txp_section', "1=1 ORDER BY adi_menu_sort", $adi_menu_db_debug);
+                    if ($rs)
+                        foreach($rs as $index => $row)
+                            $res = $res && safe_update('txp_section', 'adi_menu_sort="'.$index.'"', 'name="'.$row['name'].'"', $adi_menu_db_debug);
+                    // new sections default to end of list (255 assigned to new virtual sections by adi_menu_update())
+                    $res = $res && safe_query("ALTER TABLE ".safe_pfx("txp_section")." MODIFY COLUMN adi_menu_sort TINYINT(3) UNSIGNED DEFAULT 255 NOT NULL", $adi_menu_db_debug);
+                }
+                if ($v1_4s)
+                    $res = safe_query("ALTER TABLE ".safe_pfx('adi_menu')." ADD clone TINYINT(1) DEFAULT 0 NOT NULL", $adi_menu_db_debug)
+                        && safe_query("ALTER TABLE ".safe_pfx('adi_menu')." ADD clone_title VARCHAR(255) DEFAULT '' NOT NULL", $adi_menu_db_debug);
+                if ($v1_5t) {
+// 					$res = $res && safe_query("ALTER TABLE ".safe_pfx('adi_menu')." CONVERT TO CHARACTER SET $charset COLLATE $collate", $adi_menu_debug);
+// 					$res = $res && safe_query("ALTER TABLE ".safe_pfx('adi_menu')." ENGINE = $engine", $adi_menu_debug);
+                    $res = $res && safe_alter('adi_menu', "CONVERT TO CHARACTER SET $charset COLLATE $collate", $adi_menu_debug);
+                    $res = $res && safe_alter('adi_menu', "ENGINE = $engine", $adi_menu_debug);
+                }
+// 				if ($v1_5) {
+                    // change txp_section column adi_menu_exclude default => 1
+// 					$res = $res && safe_query("ALTER TABLE ".safe_pfx("txp_section")." MODIFY COLUMN adi_menu_exclude TINYINT(1) DEFAULT 1 NOT NULL", $adi_menu_db_debug);
+                    // if not cloned, lose clone title
+// 					$res = $res && safe_update('adi_menu', 'clone_title = ""', 'clone != 1', $adi_menu_db_debug);
+// 					$res = $res && safe_update('txp_section', 'adi_menu_title = ""', 'adi_menu_clone != 1', $adi_menu_db_debug);
+                    // set clone title to "Summary" if cloned but clone title empty
+// 					$res = $res && safe_update('adi_menu', 'clone_title = "Summary"', 'clone_title = "" AND clone = 1', $adi_menu_db_debug);
+// 					$res = $res && safe_update('txp_section', 'adi_menu_title = "Summary"', 'adi_menu_title = "" AND adi_menu_clone = 1', $adi_menu_db_debug);
+                    // delete column clone from both tables
+// 					$res = $res && safe_query("ALTER TABLE ".safe_pfx('txp_section')." DROP COLUMN adi_menu_clone", $adi_menu_db_debug);
+// 					$res = $res && safe_query("ALTER TABLE ".safe_pfx('adi_menu')." DROP COLUMN clone", $adi_menu_db_debug);
+// 				}
+                return $res;
+            }
+            else
+                return TRUE;
+        }
+        else
+            return $upgrade_required;
+    }
+    else
+        return FALSE;
+}
+
+function adi_menu_lifecycle($event, $step) {
+// such is life
+    global $adi_menu_debug;
+
+    $result = '?';
+    $upgrade = (($step == "installed") && adi_menu_installed());
+    if ($step == 'enabled')
+            $result = $upgrade = adi_menu_install();
+    else if ($step == 'deleted')
+        $result = adi_menu_uninstall();
+    if ($upgrade)
+        $result = $result && adi_menu_upgrade(TRUE);
+    if ($adi_menu_debug)
+        echo "event=$event, step=$step, result=$result, upgrade=$upgrade";
+}
+
+function adi_menu_prefs($name, $new_value = NULL) {
+// set/read preferences
+    global $prefs, $adi_menu_prefs;
+
+    if ($new_value !== NULL) { // save new value
+        set_pref('adi_menu_'.$name, $new_value, 'adi_menu_admin', 2);
+        $prefs['adi_menu_'.$name] = get_pref('adi_menu_'.$name, $new_value, TRUE);
+    }
+    // take value from $prefs or, if not set, from $adi_menu_prefs[])
+    isset($prefs['adi_menu_'.$name]) ? $value = $prefs['adi_menu_'.$name] : $value = $adi_menu_prefs[$name];
+
+    return $value;
+}
+
+function adi_menu_options($event, $step) {
+// plugin options
+    global $adi_menu_debug, $adi_menu_db_debug;
+
+    $message = '';
+
+    // check for upgrade
+    if (adi_menu_installed())
+        if (adi_menu_upgrade())
+            $step = 'upgrade';
+
+    // dance steps
+    if ($step == 'upgrade') {
+        $result = adi_menu_upgrade(TRUE);
+        $result ? $message = gTxt('adi_upgraded') : $message = array(gTxt('adi_upgrade_fail'), E_ERROR);
+    }
+    else if ($step == 'install') {
+        $result = adi_menu_install();
+        $result ? $message = gTxt('adi_installed') : $message = array(gTxt('adi_install_fail'), E_ERROR);
+    }
+    else if ($step == 'uninstall') {
+        $result = adi_menu_uninstall();
+        $result ? $message = gTxt('adi_uninstalled') : $message = array(gTxt('adi_uninstall_fail'), E_ERROR);
+    }
 }
 
 function adi_menu_admin($event, $step) {
 // adi_menu admin action!
-    global $prefs, $adi_menu_sed_sf_installed, $adi_menu_prefs, $adi_menu_debug, $adi_menu_db_debug, $adi_menu_vs_prefix;
+    global $prefs, $adi_menu_prefs, $adi_menu_debug, $adi_menu_db_debug, $adi_menu_vs_prefix;
 
-    $installed = adi_menu_installed();
+    $message = '';
 
-    $something = gps("something");
-    $res = FALSE;
-
-    if ($installed) {
+    if ($installed = adi_menu_installed()) {
+        $upgrade_required = adi_menu_upgrade();
+        if ($upgrade_required)
+            $message = array(gTxt('adi_upgrade_required'), E_WARNING);
         if ($step == "pref_update") {
             foreach ($adi_menu_prefs as $name => $value) {
+                if ($name == 'admin_pageby') continue; // hidden pref
                 if ($adi_menu_debug)
                     echo $name.'='.ps($name).' ';
                 adi_menu_prefs($name, doStripTags(ps($name)));
             }
-               pagetop("adi_menu admin", gTxt('preferences_saved'));
+               $message = gTxt('preferences_saved');
         }
-        else if ($step == "update") {
+        if ($step == "update") {
             $sections = adi_menu_section_list('', '', TRUE);
             $message = adi_menu_update($sections);
-               pagetop("adi_menu admin", $message);
         }
-        else if ($step == "sort_update") {
+        if ($step == "sort_update") {
             $message = adi_menu_sort_update();
-               pagetop("adi_menu admin", $message);
         }
-        else if ($step == "delete") {
+        if ($step == "delete") {
             $name = gps('name');
             safe_delete('adi_menu', 'name="'.$name.'"', $adi_menu_db_debug);
-               pagetop("adi_menu admin", gTxt('adi_menu_virtual_section_deleted'));
+            $message = gTxt('adi_menu_virtual_section_deleted');
         }
-        else // do nothing
-               pagetop('adi_menu admin');
-    }
-    else // not installed
-        pagetop("adi_menu admin", array(gTxt('adi_not_installed'), E_ERROR));
-
-    if ($installed) {
-
-        adi_menu_upgrade(); // txpdev
-
-        // signal fiddle
         if (($step == 'update') || ($step == 'sort_update') || ($step == 'delete'))
             update_lastmod();
+    }
+    else // not installed
+        $message = array(gTxt('adi_not_installed'), E_ERROR);
+
+        pagetop('adi_menu admin', $message);
+
+    if ($installed && !$upgrade_required) {
+
+        // paging
+        if ($step == 'adi_menu_admin_change_pageby') { // change of page length
+            $qty = gps('qty');
+            adi_menu_prefs('admin_pageby', $qty); // generates pref name adi_menu_admin_pageby
+        }
+        $dir = 'asc';
+        $page = gps('page'); // get page number
+        $pageby = adi_menu_prefs('admin_pageby'); // get current page size (or paging default, if not saved as pref)
+        $total = safe_count('txp_section', "page != ''"); // count all sections (that are not pageless)
+        $total += safe_count('adi_menu', '1=1'); // add virtual sections to the total
+        list($page, $offset, $num_pages) = pager($total, $pageby, $page);
+        $chunk = floor($offset / $pageby); // convert offset (# of sections) to array chunk number (i.e. blocks of $pageby)
+        if ($adi_menu_debug)
+            echo "PAGING: total=$total, pageby=$pageby, page=$page, offset=$offset, num_pages=$num_pages, chunk=$chunk".br;
 
         // get to work
-        $db_sections = adi_menu_section_list('', '', TRUE, 'name');
+        $all_sections = adi_menu_section_list('', '', TRUE, 'name');
+
+        // work out what to display
+        if ($pageby) {
+            $chunks = array_chunk($all_sections, $pageby, TRUE);
+            $input_sections = $chunks[$chunk];
+        }
 
         if ($adi_menu_debug) {
             $section_list = adi_menu_section_list('', '', TRUE);
@@ -344,53 +851,50 @@ function adi_menu_admin($event, $step) {
             echo 'CATEGORY/SECTION MAP:';
             $cat_section_map = adi_menu_cat_section_map($section_list);
             dmp($cat_section_map);
-            if ($adi_menu_sed_sf_installed)
-                print 'sed_section_fields v'.$adi_menu_sed_sf_installed['version'].' is installed & active';
         }
 
         // SANITY CHECKS
-        // check for section loops
+        // section loops
         $out = array();
-        foreach ($db_sections as $section => $section_data)
-            if (adi_menu_loop_check($db_sections, $section_data['adi_menu_parent']))
+        foreach ($all_sections as $section => $section_data)
+            if (adi_menu_loop_check($all_sections, $section_data['adi_menu_parent']))
                 $out[] = adi_menu_strip_prefix($section).(adi_menu_is_virtual($section) ? ' (virtual)' : '');
         if ($out)
             echo tag('** '.gTxt('adi_menu_loop_warning').': '.implode(', ', $out).' **', 'p', ' class="adi_menu_warning warning"');
 
-        // check for missing parents
-        $missing_parents = adi_menu_parent_check($db_sections);
+        // missing parents
+        $missing_parents = adi_menu_parent_check($all_sections);
         $out = array();
         foreach ($missing_parents as $section => $parent)
             $out[] = adi_menu_strip_prefix($section).(adi_menu_is_virtual($section) ? ' (virtual)' : '').' -> '.$parent;
         if ($out)
             echo tag('** '.gTxt('adi_menu_parent_warning').': '.implode('; ', $out).' **', 'p', ' class="adi_menu_warning warning"');
 
-        // check for missing redirect sections
-        $missing_sections = adi_menu_redirect_section_check($db_sections);
+        // missing redirect sections
+        $missing_sections = adi_menu_redirect_section_check($all_sections);
         $out = array();
         foreach ($missing_sections as $section => $redirect_section)
             $out[] = adi_menu_strip_prefix($section).(adi_menu_is_virtual($section) ? ' (virtual)' : '').' -> '.$redirect_section;
         if ($out)
             echo tag('** '.gTxt('adi_menu_redirect_section_warning').': '.implode('; ', $out).' **', 'p', ' class="adi_menu_warning warning"');
 
-        // check for missing redirect links
-        $missing_links = adi_menu_redirect_link_check($db_sections);
+        // missing redirect links
+        $missing_links = adi_menu_redirect_link_check($all_sections);
         $out = array();
         foreach ($missing_links as $section => $link)
             $out[] = adi_menu_strip_prefix($section).(adi_menu_is_virtual($section) ? ' (virtual)' : '').' -> '.$link;
         if ($out)
             echo tag('** '.gTxt('adi_menu_redirect_link_warning').': '.implode('; ', $out).' **', 'p', ' class="adi_menu_warning warning"');
 
-        // check for missing redirect categories
-        $missing_categories = adi_menu_redirect_category_check($db_sections);
+        // missing redirect categories
+        $missing_categories = adi_menu_redirect_category_check($all_sections);
         $out = array();
         foreach ($missing_categories as $section => $category)
             $out[] = adi_menu_strip_prefix($section).(adi_menu_is_virtual($section)? ' (virtual)' : '').' -> '.$category;
         if ($out)
             echo tag('** '.gTxt('adi_menu_redirect_category_warning').': '.implode('; ', $out).' **', 'p', ' class="adi_menu_warning warning"');
 
-        // check for real section names clashing with virtual section names (e.g. real 'v_asd' & virtual 'asd')
-//         $rs = safe_query('SELECT '.safe_pfx('txp_section').'.name, '.safe_pfx('adi_menu').'.name FROM '.safe_pfx('txp_section').', adi_menu WHERE '.safe_pfx('txp_section').".name = concat('".$adi_menu_vs_prefix."',".safe_pfx('adi_menu').'.name);',$adi_menu_db_debug);
+        // real section names clashing with virtual section names (e.g. real 'v_asd' & virtual 'asd')
         $rs = safe_query('SELECT '.safe_pfx('txp_section').'.name, '.safe_pfx('adi_menu').'.name FROM '.safe_pfx('txp_section').', '.safe_pfx('adi_menu').' WHERE '.safe_pfx('txp_section').".name = concat('".$adi_menu_vs_prefix."',".safe_pfx('adi_menu').'.name);', $adi_menu_db_debug);
         $out = array();
         while ($a = nextRow($rs))
@@ -398,17 +902,18 @@ function adi_menu_admin($event, $step) {
         if ($out)
             echo tag('** '.gTxt('adi_menu_duplicate_warning').': '.implode('; ', $out).' **', 'p', ' class="adi_menu_warning warning"');
 
+        // hide redirect link column if there're no links defined
+        $links_found = adi_menu_link_popup('test', '');
+        $hide_links = ($links_found ? '' : ' class="adi_menu_hide"');
+
         // hide redirect categories column if there're no categories defined
         $categories_found = adi_menu_category_popup('test', '');
-        if ($categories_found)
-            $hide_cats = '';
-        else
-            $hide_cats = ' class="adi_menu_hide"';
+        $hide_cats = ($categories_found ? '' : ' class="adi_menu_hide"');
 
         // output adi_menu settings table
         echo form(
-            hed(gTxt('adi_menu'), 1, ' class="txp-heading"')
-            .startTable('list', '', "edit-table txp-list")
+            hed(gTxt('adi_menu'), 1)
+            .startTable('list', '', 'edit-table txp-list')
             .tag(
                 tr(
                     hcell(gTxt('section'))
@@ -420,53 +925,69 @@ function adi_menu_admin($event, $step) {
                     .hcell(gTxt('adi_clone'))
                     .hcell(gTxt('adi_clone_title'))
                     .hcell(gTxt('adi_redirect_section'))
-                    .hcell(gTxt('adi_redirect_link'))
+                    .hcell(gTxt('adi_redirect_link'), '', $hide_links)
                     .hcell(gTxt('adi_redirect_category'), '', $hide_cats) // may be hidden if there're no categories defined
                     .hcell(sp) // delete buttons
                 )
                 , 'thead'
             )
-            .adi_menu_display_settings($db_sections)
+            .adi_menu_display_settings($input_sections, $all_sections, $hide_links, $hide_cats)
             .endTable()
             .tag(
-                fInput("submit", "update", gtxt('save'), "publish").
-                eInput("adi_menu_admin").sInput("update"),
-                'div'
+                fInput('submit', 'update', gtxt('save'), 'publish')
+                .eInput('adi_menu_admin')
+                .hInput('page', $page)
+                .hInput('dir', $dir)
+                .sInput('update')
+                , 'div'
             )
             , ''
             , ''
             , 'post'
             , 'adi_menu_form'
         );
-    }
 
-    // output hierarchy summary
-    global $default_first, $include_children, $default_title, $menu_id, $escape, $clone_title, $parent_class, $list_id; // globals: yuk!
-    if ($installed) {
-        $sections=$exclude="";
-        $default_first="1";
-        $list_id="1";
-        $include_children="1";
-        $menu_id = "mainmenu";
-        $escape = '';
-        $default_title = 'Home';
-        $clone_title = 'Summary';
-        $parent_class = 'menuparent';
-        $section_list = adi_menu_section_list('', '', TRUE);
-        $hierarchy = adi_menu_hierarchy($section_list);
-        $out = adi_menu_markup($hierarchy, 0);
-        echo '<div id="adi_menu_summary">';
-        echo tag(gTxt('adi_summary'), 'h2');
-        $summary_note = ' ('.gTxt('adi_menu_summary_note_key').').';
-        $vs = safe_rows('name', 'adi_menu', '1=1 ORDER BY RAND() LIMIT 1');
-        echo graf(gTxt('adi_menu_summary_note').'.'.sp.gTxt('adi_menu_summary_footnote').'.');
-        if ($vs)
-            echo graf(gTxt('adi_menu_summary_note_prefix').' "'.$adi_menu_vs_prefix.'", '.strtolower(gTxt('adi_for_example')).' '.tag('sections="'.$adi_menu_vs_prefix.$vs[0]['name'].'"', 'em').'.');
-        echo graf(gTxt('adi_menu_summary_note_drag_drop').'.', ' class="adi_menu_summary_note_drag_drop"');
-        echo graf(gTxt('adi_menu_summary_note_key2'), ' class="adi_menu_key"');
-        echo implode($out);
-        echo '</div>';
-    }
+        // paging controls
+        echo ($total > 12
+            ? tag(
+                ($total > $pageby ? nav_form($event, $page, $num_pages, 'name', $dir, '', '', $total, $pageby, '') : '')
+                .Txp::get('\Textpattern\Admin\Paginator', $event, $step)->render($pageby)
+                , 'div'
+                , ' id="list_navigation" class="txp-navigation"'
+            )
+            : ''
+        );
+
+        // output hierarchy summary
+        global $default_first, $include_children, $default_title, $menu_id, $escape, $clone_title, $parent_class, $list_id, $parent_link_class, $sub_menu_class; // globals: yuk!
+        if ($installed) {
+            $clone_title = 'Summary';
+            $default_first = '1';
+            $default_title = 'Home';
+            $escape = '';
+            $include_children = '1';
+            $list_id = '1';
+            $menu_id = 'mainmenu';
+            $parent_class = 'menuparent';
+            $parent_link_class = '';
+            $sections = $exclude = '';
+            $sub_menu_class = '';
+            $sub_menu_link_class = '';
+            $section_list = adi_menu_section_list('', '', TRUE); // excludes overridden
+            $hierarchy = adi_menu_hierarchy($section_list);
+            $out = adi_menu_markup($hierarchy, 0);
+            echo '<div id="adi_menu_summary">';
+            echo tag(gTxt('adi_summary'), 'h2');
+            $summary_note = ' ('.gTxt('adi_menu_summary_note_key').').';
+            $vs = safe_rows('name', 'adi_menu', '1=1 ORDER BY RAND() LIMIT 1');
+            echo graf(gTxt('adi_menu_summary_note').'.'.sp.gTxt('adi_menu_summary_footnote').'.');
+            if ($vs)
+                echo graf(gTxt('adi_menu_summary_note_prefix').' "'.$adi_menu_vs_prefix.'", '.strtolower(gTxt('adi_for_example')).' '.tag('sections="'.$adi_menu_vs_prefix.$vs[0]['name'].'"', 'em').'.');
+            echo graf(gTxt('adi_menu_summary_note_drag_drop').'.', ' class="adi_menu_summary_note_drag_drop"');
+            echo graf(gTxt('adi_menu_summary_note_key2'), ' class="adi_menu_key"');
+            echo implode($out);
+            echo '</div>';
+        }
 
     // plugin preferences
     if ($installed)
@@ -506,369 +1027,26 @@ function adi_menu_admin($event, $step) {
                     , 'label'
                 )
             )
-            .fInput("submit", "do_something", gTxt('adi_update_prefs'), "smallerbox", "", '')
-            .eInput("adi_menu_admin")
-            .sInput("pref_update")
+            .fInput('submit', 'do_something', gTxt('adi_update_prefs'), 'smallerbox', '', '')
+            .eInput('adi_menu_admin')
+            .sInput('pref_update')
+            .hInput('page', $page)
+            .hInput('dir', $dir)
             , ''
             , ''
             , 'post'
             , 'adi_menu_form'
         );
+    }
 
     if ($adi_menu_debug) {
         echo 'PREFS:'.br; // should create list automatically
         foreach ($adi_menu_prefs as $name => $value)
-            echo $name.': '.adi_menu_prefs($name).br;
+            echo "$name: ".adi_menu_prefs($name).br;
     }
 }
 
-function adi_menu_options($event, $step) {
-// plugin options
-    global $adi_menu_debug, $adi_menu_db_debug;
-
-    $message = '';
-
-    // dance steps
-    if ($step == 'downgrade') {
-        $result = adi_menu_downgrade();
-        $result ? $message = gTxt('adi_downgraded') : $message = array(gTxt('adi_downgrade_fail'), E_ERROR);
-    }
-    else if ($step == 'install') {
-        $result = adi_menu_install();
-        $result ? $message = gTxt('adi_installed') : $message = array(gTxt('adi_install_fail'), E_ERROR);
-    }
-    else if ($step == 'uninstall') {
-        $result = adi_menu_uninstall();
-        $result ? $message = gTxt('adi_uninstalled') : $message = array(gTxt('adi_uninstall_fail'), E_ERROR);
-    }
-}
-
-function adi_menu_admin_script() {
-// jQuery magic for admin tab
-
-    $section_list = adi_menu_section_list('', '', TRUE);
-    $sort_value_jquery = '';
-    foreach ($section_list as $name => $section) {
-        $sort_value_jquery .= '$("#mainmenu li#'.$name.' > input").attr("value","'.$section['adi_menu_sort'].'");'.n;
-        if ($section['adi_menu_exclude'])
-            $sort_value_jquery .= '$("#mainmenu li#'.$name.'").addClass("excluded");'.n;
-    }
-
-    $button_text = gTxt('adi_menu_update_order');
-
-    $ui_script = '';
-
-    echo <<<END_SCRIPT
-<!-- drag and drop -->
-$ui_script
-<script type="text/javascript">
-    // adi_menu
-    if (jQuery.ui) { // jQuery UI available
-        $(function() {
-            $('form.adi_menu_form #list .adi_menu_sort').hide(); // hide sort value column
-            $('#adi_menu_summary').addClass('adi_menu_drag_drop');
-
-            $("#mainmenu").wrap('<form class="adi_menu_summary" action="index.php#adi_menu_summary" method="post"></form>');
-            $("#mainmenu li").each(function(){
-                var this_id = $(this).attr('id');
-                $(this).append('<input type="hidden" value="" class="sort_value" />');
-                $('input',this).attr('name','sort['+this_id+']');
-            });
-            $("#mainmenu li.menu_virtual").each(function(){
-                var this_id = $(this).attr('id');
-                $(this).children('input').attr('name','virtual_sort['+this_id+']'); // immediate children
-            });
-
-            $sort_value_jquery
-
-            $("form.adi_menu_summary").append('<input type="hidden" name="event" value="adi_menu_admin" />');
-            $("form.adi_menu_summary").append('<input type="hidden" name="step" value="sort_update" />');
-            $("form.adi_menu_summary").append('<input class="smallerbox" type="submit" name="do_something" value="$button_text" />');
-            $("#mainmenu").sortable({
-                items: "li",
-                opacity: 0.6,
-//                 cursor: 'move',
-                containment: 'form.adi_menu_summary',
-                grid: [10, 10],
-//                 connectWith: ".connectedSortable"
-            });
-            // update sort values
-            $("#mainmenu").bind("sortstop",function(event, ui) {
-                $('input.sort_value').each(function(i) { // renumber sort values
-                    var this_input = $(this);
-                    this_input.val(i+1);
-                });
-            });
-        });
-    }
-</script>
-END_SCRIPT;
-}
-
-function adi_menu_style() {
-// some style for the admin page
-
-    echo
-        '<style type="text/css">
-            /* adi_menu */
-            .txp-body { max-width:none }
-            h2 { font-weight:bold }
-            #adi_menu_summary { margin:2em 10em 2em; padding:1em 0 2em; border:solid #ccc; border-width:1px 0 }
-            #adi_menu_summary ul li li { margin-left:2em }
-            #adi_menu_summary .menu_redirect > a { font-weight:bold }
-            #adi_menu_summary .menu_alt_title > a { font-style:italic }
-            #adi_menu_summary .menu_virtual > a:before { content:"\0022" }
-            #adi_menu_summary .menu_virtual > a:after { content:"\0022" }
-            #adi_menu_summary #mainmenu { margin-bottom:2em } /* helps drag&drop */
-            #adi_menu_summary ul { margin-bottom:0.5em } /* helps drag&drop */
-            #adi_menu_summary.adi_menu_drag_drop ul li { list-style-type:none }
-            #adi_menu_summary.adi_menu_drag_drop ul li:before { content: "\2195\00a0"; }
-            #adi_menu_summary .adi_menu_key span { color:#963 }
-            #adi_menu_summary .adi_menu_key span span, #adi_menu_summary li.excluded a { color:grey }
-            .adi_menu_summary_note_drag_drop { display:none }
-            #adi_menu_summary.adi_menu_drag_drop .adi_menu_summary_note_drag_drop { display:block }
-            .adi_menu_warning { margin:1em; text-align:center; font-weight:bold }
-            .adi_menu_form { margin-top:2em; text-align:center }
-            .adi_menu_form div { margin-top:2em }
-            .adi_menu_hide { display:none }
-            option.adi_menu_virtual:before, option.adi_menu_virtual:after { content:\'"\' }
-            a.dlink { font-size:120% }
-            form h1 { display:none }
-            /* TXP 4.6 */
-            main.txp-body #adi_menu_summary .adi_menu_key span { color:#004cbf }
-            main.txp-body #adi_menu_summary .adi_menu_key span span { color:grey }
-            main.txp-body #adi_menu_summary { margin:2em 0 2em }
-        </style>';
-}
-
-function adi_menu_column_found($column, $table='txp_section') {
-// check for presence of a column in a table
-    global $adi_menu_db_debug;
-
-    $rs = safe_query('SHOW FIELDS FROM '.safe_pfx($table)." LIKE '".$column."'", $adi_menu_db_debug); // find out if column exists
-    $a = nextRow($rs);
-
-    return !empty($a);
-}
-
-function adi_menu_installed() {
-// if 'adi_menu_parent' column present then assume adi_menu is installed
-
-    return(adi_menu_column_found('adi_menu_parent'));
-}
-
-function adi_menu_truncate_text($text, $limit) {
-// not currently used
-
-    $words = do_list($text, ' ');
-    $truncated_text = '';
-    foreach ($words as $index => $this_word) {
-        $truncated_text .= $this_word.' ';
-        if (strlen($truncated_text) >= $limit)
-            break;
-    }
-    $truncated_text = trim($truncated_text);
-    if ($truncated_text != $text)
-        $truncated_text .= ' ...';
-    return $truncated_text;
-}
-
-function adi_menu_strip_prefix($text) {
-// strip "v_" from front of supplied text
-    global $adi_menu_vs_prefix;
-
-    $text = trim($text);
-    return (strpos($text, $adi_menu_vs_prefix) === 0) ? substr($text, strlen($adi_menu_vs_prefix)) : $text;
-}
-
-function adi_menu_is_virtual($name) {
-// section deemed to be virtual if:
-//        - its 'adi_menu_id' value in section_list is not NULL (i.e. set to 'adi_menu' table row id )
-//        - OR if not found in $section_list, its name begins with "v_"
-    global $section_list, $adi_menu_vs_prefix;
-
-    $name = trim($name);
-    if (isset($section_list[$name])) // requested section found is known
-        return ($section_list[$name]['adi_menu_id'] !== NULL);
-    else // requested section not found, so based verdict on its name
-        return (strpos(trim($name), $adi_menu_vs_prefix) === 0);
-}
-
-function adi_menu_display_settings($sections) {
-// generate section's table row in admin settings table
-    global $prefs;
-
-    $out = '';
-
-    // hide redirect categories column if there're no categories defined
-    $categories_found = adi_menu_category_popup('test', '');
-    if ($categories_found)
-        $hide_cats = '';
-    else
-        $hide_cats = ' class="adi_menu_hide"';
-
-    // add new virtual section input fields
-    $sections[0]['adi_menu_id'] = 0; // zero = add new virtual section
-    $sections[0]['name'] = '';
-    $sections[0]['title'] = '';
-    $sections[0]['adi_menu_parent'] = '';
-    $sections[0]['adi_menu_title'] = '';
-    $sections[0]['adi_menu_exclude'] = 0;
-    $sections[0]['adi_menu_clone'] = 0;
-    $sections[0]['adi_menu_sort'] = 255; // the maximum value for an INT(3)
-    $sections[0]['adi_menu_redirect_section'] = '';
-    $sections[0]['adi_menu_redirect_link'] = '';
-    $sections[0]['adi_menu_alt_title'] = '';
-    $sections[0]['adi_menu_redirect_category'] = '';
-
-    $vs_found = FALSE;
-    foreach ($sections as $index => $section) {
-        $id = $section['adi_menu_id']; // NULL = normal section, number = virtual section, zero = add new virtual section
-        $name = $section['name'];
-        $title = $section['title'];
-        $parent = $section['adi_menu_parent'];
-        $clone_title = $section['adi_menu_title'];
-        $exclude = $section['adi_menu_exclude'];
-        $clone = $section['adi_menu_clone'];
-        $sort = $section['adi_menu_sort'];
-        $redirect_section = $section['adi_menu_redirect_section'];
-        $redirect_link = $section['adi_menu_redirect_link'];
-        $alt_title = $section['adi_menu_alt_title'];
-        $redirect_category = $section['adi_menu_redirect_category'];
-        if (!$vs_found && ($id !== NULL)) { // virtual sections subheading
-            $vs_found = TRUE;
-            $out.= tr(tda(strong(gTxt('adi_menu_virtual_sections')), ' colspan="12"'));
-        }
-        $out .= tr(
-            // section name/link to section tab (normal sections) OR input field (virtual sections)
-            ($id === NULL ?
-                tda('<a href="'.ahu.'index.php?event=section&amp;step=section_edit&amp;name='.$index.'">'.$index.'</a>')
-                :
-                tda(finput('text', "name[$index]", $name))
-            )
-//            .tda(htmlspecialchars(adi_menu_truncate_text($title, 12)))
-            // section title (input field for virtual sections)
-            .tda(
-                ($id !== NULL ?
-                    finput("text", "title[$index]", $title)
-                    :
-                    htmlspecialchars($title)
-                )
-                .hinput("id[$index]", $id)
-            )
-//             .tda(htmlspecialchars($title))
-            .tda(finput("text", "alt_title[$index]", $alt_title))
-            .tda(checkbox("exclude[$index]", "1", $exclude))
-            .tda(adi_menu_section_popup($sections, $index, "parent[$index]", $parent))
-            .tda(finput("text", "sort[$index]", $sort, '', '', '', 4), ' class="adi_menu_sort"') // hidden if jQuery-UI is available
-            .tda(checkbox("clone[$index]", "1", $clone))
-            .tda(finput("text", "clone_title[$index]", $clone_title))
-            .tda(adi_menu_section_popup($sections, $index, "redirect_section[$index]", $redirect_section))
-            .tda(adi_menu_link_popup("redirect_link[$index]", $redirect_link))
-            .tda(adi_menu_category_popup("redirect_category[$index]", $redirect_category), $hide_cats) // may be hidden if there're no categories defined
-            .tda(adi_menu_delete_button($id, $name))
-        );
-    }
-    return $out;
-}
-
-function adi_menu_section_popup($section_list, $this_section, $select_name, $value) {
-// generate section/virtual section popup list for admin settings table
-    global $adi_menu_vs_prefix;
-
-    $out = '<option value=""></option>';
-
-    $vs_found = FALSE;
-
-    if ($section_list) {
-        $out .= '<optgroup label="Sections">';
-        foreach ($section_list as $section_name => $section) {
-            if ($section_name) { // don't want section "0" (i.e. the "new" virtual section)
-                $disabled = $selected = '';
-                if ($this_section && ($section_name == $this_section)) // if it's not new virtual section ($this_section = 0), prevent loop
-                    $disabled = ' disabled="disabled"'; // don't want to offer section as a parent of (or redirect to) itself
-                if ($section_name == $value)
-                    $selected = ' selected="selected"';
-                if (!$vs_found && ($section['adi_menu_id'] !== NULL)) { // virtual sections subheading
-                    $vs_found = TRUE;
-                    $out .= '</optgroup>';
-                    $out .= '<optgroup label="Virtual Sections">';
-                }
-                if ($vs_found)
-                    // value includes prefix (i.e. virtual section name), label shouldn't
-                    $out .= '<option value="'.$section_name.'"'.$disabled.$selected.' class="adi_menu_virtual">'.adi_menu_strip_prefix($section_name).'</option>';
-                else
-                    $out .= '<option value="'.$section_name.'"'.$disabled.$selected.'>'.$section_name.'</option>';
-            }
-        }
-        $out .= '</optgroup>';
-    }
-
-    return tag($out, 'select', ' name="'.$select_name.'"');
-}
-
-function adi_menu_link_popup($select_name, $value) {
-// generate link popup list for admin settings table
-// TODO - make this non-DB like section_popup
-
-    $rs = safe_column('id', 'txp_link', '1=1');
-    if ($rs)
-        return selectInput($select_name, $rs, $value, TRUE);
-    return false;
-}
-
-function adi_menu_category_popup($select_name, $value) {
-// generate category popup list for admin settings table
-// TODO - make this non-DB like section_popup
-
-    $rs = safe_column('name', 'txp_category', 'name != "root" AND type="article"');
-    if ($rs)
-        return selectInput($select_name, $rs, $value, TRUE);
-    return false;
-}
-
-function adi_menu_delete_button($id, $name) {
-// virtual section delete button [X]
-
-    $event = 'adi_menu_admin';
-    $step = 'delete';
-//     $url = '?event='.$event.a.'step='.$step.a.'name='.$name;
-//
-//     if ($id)
-//         return
-//             '<a href="'
-//             .$url
-//             .'" class="dlink" title="Delete?" onclick="return verify(\''
-//             .$name
-//             .' - '
-//             .gTxt('confirm_delete_popup')
-//             .'\')">&#215;</a>';
-//     else // don't want delete button (id="0") for real sections or new section (id="")
-//         return sp;
-
-    if ($id) {
-        return
-            href(
-                span('Delete', ' class="ui-icon ui-icon-trash"')
-                , array(
-                    'event' => $event,
-                    'step' => $step,
-                    'name' => $name,
-                    '_txp_token'    => form_token(),
-                )
-                , array(
-                    'class'       => 'dlink destroy',
-                    'title'       => gTxt('delete'),
-                    'data-verify' => gTxt('confirm_delete_popup'),
-                )
-            );
-    }
-    else // don't want delete button (id="0") for real sections or new section (id="")
-        return sp;
-
-}
-
-function adi_menu_update($sections) {
+function adi_menu_update() {
 // update DB tables:
 //        adi_menu         txp_section
 //        id               -
@@ -900,22 +1078,16 @@ function adi_menu_update($sections) {
     $alt_title = doStripTags(ps('alt_title'));
     $redirect_category = doStripTags(ps('redirect_category'));
 
-    // force update to look at new section "0" input
-    $sections[0] = array();
-
     $name_pairs = array(); // for recording name changes
 
-    foreach ($sections as $index => $section) {
-        if ($id[$index] != '') { // VIRTUAL SECTIONS, update adi_menu table
+    foreach ($sort as $index => $not_used) { // using $sort array from POST data to get list of sections present in input data
+        if ($id[$index] != '') { // VIRTUAL SECTIONS - update adi_menu table
             $where = 'id="'.$id[$index].'"';
             $set = array();
             $this_name = strtolower(sanitizeForUrl($name[$index]));
             $this_name = adi_menu_strip_prefix($this_name);
             $set[] = 'name="'.doSlash($this_name).'"';
-            if (trim($title[$index]) == '') // don't want blank title, default to section name
-                $set[] = 'title="'.doSlash($name[$index]).'"';
-            else
-                $set[] = 'title="'.doSlash($title[$index]).'"';
+            $set[] = 'title="'.doSlash((trim($title[$index]) == '' ? $name[$index] : $title[$index])).'"'; // don't want blank title, default to section name
             $set[] = 'alt_title="'.doSlash($alt_title[$index]).'"';
             $set[] = 'parent="'.doSlash($parent[$index]).'"';
             $set[] = 'clone_title="'.doSlash($clone_title[$index]).'"';
@@ -927,9 +1099,8 @@ function adi_menu_update($sections) {
                 if ($redirect_link[$index] != '') // don't want to set integer field as '' (uses default 0 instead)
                     $set[] = 'link="'.doSlash($redirect_link[$index]).'"';
             }
-            if (!empty($redirect_category)) { // there might not be any categories defined in the TXP database!
+            if (!empty($redirect_category)) // there might not be any categories defined in the TXP database!
                 $set[] = 'category="'.doSlash($redirect_category[$index]).'"';
-            }
             // update database
             $set = implode(', ', $set);
             if ($id[$index] == '0') { // new virtual section
@@ -944,12 +1115,11 @@ function adi_menu_update($sections) {
             else { // update existing virtual section
                 $old_name = safe_field('name', 'adi_menu', $where, $adi_menu_db_debug);
                 $res = safe_update('adi_menu', $set, $where, $adi_menu_db_debug);
-                if ($res && ($old_name != $this_name)) { // record name change for later parent updates
+                if ($res && ($old_name != $this_name)) // record name change for later parent updates
                     $name_pairs[] = array('old' => $old_name, 'new' => $this_name);
-                }
             }
         }
-        else { // NORMAL SECTIONS, update txp_section table
+        else { // NORMAL SECTIONS - update txp_section table
             $where = 'name="'.$index.'"';
             $set = array();
             $set[] = 'adi_menu_parent="'.doSlash($parent[$index]).'"';
@@ -960,12 +1130,15 @@ function adi_menu_update($sections) {
             $set[] = 'adi_menu_alt_title="'.doSlash($alt_title[$index]).'"';
             $set[] = 'adi_menu_redirect_section="'.doSlash($redirect_section[$index]).'"';
             if (!empty($redirect_link)) { // there might not be any links defined in the TXP database!
-                if ($redirect_link[$index] != '') // don't want to set integer field as '' (uses default 0 instead)
+//              if ($redirect_link[$index] != '') // don't want to set integer field as '' (uses default 0 instead)
+            //  $set[] = 'adi_menu_redirect_link="'.doSlash($redirect_link[$index]).'"';
+                if (empty($redirect_link[$index])) // can't set integer column to '' (use 0 instead)
+                    $set[] = 'adi_menu_redirect_link="0"';
+                else
                     $set[] = 'adi_menu_redirect_link="'.doSlash($redirect_link[$index]).'"';
             }
-            if (!empty($redirect_category)) { // there might not be any categories defined in the TXP database!
+            if (!empty($redirect_category)) // there might not be any categories defined in the TXP database!
                 $set[] = 'adi_menu_redirect_category="'.doSlash($redirect_category[$index]).'"';
-            }
             // update database
             $set = implode(', ', $set);
             safe_update('txp_section', $set, $where, $adi_menu_db_debug);
@@ -987,6 +1160,7 @@ function adi_menu_sort_update() {
 
     $sort = ps('sort');
     $virtual_sort = ps('virtual_sort');
+
     if ($sort)
         foreach ($sort as $name => $value)
             $res = safe_update('txp_section', 'adi_menu_sort="'.$value.'"', 'name="'.$name.'"', $adi_menu_db_debug);
@@ -1002,169 +1176,7 @@ function adi_menu_sort_update() {
     return $message;
 }
 
-function adi_menu_install() {
-// add adi_menu's columns to txp_section table
-// note: TINYINT(1) DEFAULT 0 = BOOLEAN DEFAULT FALSE
-// sort value only goes up to 255 - INT(3)
-    global $adi_menu_db_debug;
-
-    if (adi_menu_installed())
-        return TRUE;
-    else // add basic columns to txp_section
-        return safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_parent VARCHAR(128) DEFAULT '';", $adi_menu_db_debug)
-            && safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_title VARCHAR(128) DEFAULT '';", $adi_menu_db_debug)
-            && safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_exclude TINYINT(1) DEFAULT 0 NOT NULL;", $adi_menu_db_debug)
-            && safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_clone TINYINT(1) DEFAULT 0 NOT NULL;", $adi_menu_db_debug)
-            && safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_sort TINYINT(3) UNSIGNED DEFAULT 0 NOT NULL;", $adi_menu_db_debug);
-}
-
-function adi_menu_uninstall() {
-// remove adi_menu's columns from txp_section table
-    global $adi_menu_db_debug;
-
-    // remove traditional columns
-    $res = safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_parent;", $adi_menu_db_debug)
-        && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_title;", $adi_menu_db_debug)
-        && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_exclude;", $adi_menu_db_debug)
-        && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_clone;", $adi_menu_db_debug)
-        && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_sort;", $adi_menu_db_debug);
-    if (adi_menu_column_found('adi_menu_redirect_section')) // remove version 1.0 columns
-        $res = $res
-            && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_redirect_section;", $adi_menu_db_debug)
-            && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_redirect_link;", $adi_menu_db_debug);
-    if (adi_menu_column_found('adi_menu_accesskey')) // remove version 1.0beta only columns
-        $res = $res
-            && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_accesskey;", $adi_menu_db_debug)
-            && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_tabindex;", $adi_menu_db_debug);
-    if (adi_menu_column_found('adi_menu_alt_title')) // remove version 1.1 columns
-        $res = $res && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_alt_title;", $adi_menu_db_debug);
-    if (adi_menu_column_found('adi_menu_redirect_category')) { // remove version 1.4 column & adi_menu_table
-        $res = $res && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_redirect_category;", $adi_menu_db_debug);
-        $res = $res && safe_query("DROP TABLE ".safe_pfx('adi_menu').";", $adi_menu_db_debug);
-    }
-    // delete preferences
-    $res = $res && safe_delete('txp_prefs', "name LIKE 'adi_menu_%'", $adi_menu_db_debug);
-
-    return $res;
-}
-
-function adi_menu_upgrade() {
-// add additional adi_menu columns to txp_section table, if required
-    global $adi_menu_db_debug, $adi_menu_sql_fields;
-
-    // record the number of 'default' articles
-    $rs = safe_rows('id', 'textpattern', "section='default'");
-    adi_menu_prefs('write_tab_select_default', count($rs));
-    // upgrade actions
-    $res = TRUE;
-    // version 1.0
-    if (!adi_menu_column_found('adi_menu_redirect_section'))
-        $res = safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_redirect_section VARCHAR(128) DEFAULT '';", $adi_menu_db_debug)
-            && safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_redirect_link TINYINT(3) UNSIGNED DEFAULT 0 NOT NULL;", $adi_menu_db_debug);
-    // version 1.1
-    if (!adi_menu_column_found('adi_menu_alt_title'))
-        $res = $res && safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_alt_title VARCHAR(128) DEFAULT '';", $adi_menu_db_debug);
-    // version 1.4
-    if (!adi_menu_column_found('adi_menu_redirect_category')) {
-        $res = $res && safe_query("ALTER TABLE ".safe_pfx("txp_section")." ADD adi_menu_redirect_category VARCHAR(128) DEFAULT '';", $adi_menu_db_debug);
-        $res = $res && safe_create('adi_menu', "
-                id          INT             NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                name        VARCHAR(128)    NOT NULL,
-                title       VARCHAR(255)    NOT NULL DEFAULT '',
-                alt_title   VARCHAR(255)    NOT NULL DEFAULT '',
-                parent      VARCHAR(128)    NOT NULL DEFAULT '',
-                clone       TINYINT(1)      NOT NULL DEFAULT 0,
-                clone_title VARCHAR(255)    NOT NULL DEFAULT '',
-                exclude     TINYINT(1)      NOT NULL DEFAULT 0,
-                sort        TINYINT(3)      UNSIGNED NOT NULL DEFAULT 255,
-                section     VARCHAR(128)    NOT NULL DEFAULT '',
-                link        TINYINT(3)      UNSIGNED NOT NULL DEFAULT 0,
-                category    VARCHAR(128)    NOT NULL DEFAULT ''
-            ",
-            '', // no options
-            $adi_menu_db_debug
-        );
-        // force unique sort values (using $rs array index from "0") to ensure later use of (unstable) uasort doesn't cause problems
-        $rs = safe_rows($adi_menu_sql_fields, 'txp_section', "1=1 ORDER BY adi_menu_sort", $adi_menu_db_debug);
-        if ($rs)
-            foreach($rs as $index => $row)
-                $res = $res && safe_update('txp_section', 'adi_menu_sort="'.$index.'"', 'name="'.$row['name'].'"', $adi_menu_db_debug);
-        // new sections default to end of list (255 assigned to new virtual sections by adi_menu_update())
-        $res = $res && safe_query("ALTER TABLE ".safe_pfx("txp_section")." MODIFY COLUMN adi_menu_sort TINYINT(3) UNSIGNED DEFAULT 255 NOT NULL;", $adi_menu_db_debug);
-    }
-    // version 1.4 supplemental
-    if (!adi_menu_column_found('clone', 'adi_menu'))
-        $res = safe_query("ALTER TABLE ".safe_pfx('adi_menu')." ADD clone TINYINT(1) DEFAULT 0 NOT NULL;", $adi_menu_db_debug)
-            && safe_query("ALTER TABLE ".safe_pfx('adi_menu')." ADD clone_title VARCHAR(255) DEFAULT '' NOT NULL;", $adi_menu_db_debug);
-
-    return $res;
-}
-
-function adi_menu_downgrade() {
-// downgrade to previous version - 1.4 to 1.1+ only
-    global $adi_menu_db_debug;
-
-    $res = TRUE;
-    $res = $res && safe_query("ALTER TABLE ".safe_pfx("txp_section")." DROP COLUMN adi_menu_redirect_category;", $adi_menu_db_debug);
-    $res = $res && safe_query("DROP TABLE ".safe_pfx('adi_menu').";", $adi_menu_db_debug);
-
-    return $res;
-}
-
-function adi_menu_lifecycle($event, $step) {
-// a matter of life & death
-// $event:    "plugin_lifecycle.adi_menu"
-// $step:    "installed", "enabled", "disabled", "deleted"
-    global $adi_menu_debug;
-
-    $result = '?';
-    $upgrade = (($step == "installed") && adi_menu_installed());
-    if ($step == 'enabled') {
-            $result = $upgrade = adi_menu_install();
-//        if (adi_menu_installed())
-//            $result = $upgrade = adi_menu_upgrade();
-//        else { // install, then upgrade
-//            if (adi_menu_install())
-//                $result = adi_menu_upgrade();
-//        }
-    }
-    else if ($step == 'deleted')
-        $result = adi_menu_uninstall();
-    if ($upgrade)
-        $result = $result && adi_menu_upgrade();
-    if ($adi_menu_debug)
-        echo "Event=$event, Step=$step, Result=$result, Upgrade=$upgrade";
-}
-
-function adi_menu_add_form() {
-// add adi_menu's article form for old article mode
-    global $adi_menu_article_form;
-
-    if (!safe_field('name', 'txp_form', "name='".$adi_menu_article_form."'")) {
-        $form = <<<EOF
-<li class="menu_article"><txp:permlink><txp:title/></txp:permlink></li>
-EOF;
-        safe_insert('txp_form',
-            "name='".$adi_menu_article_form."',
-            type='article',
-            Form='".doSlash($form)."'");
-    }
-}
-
-function adi_menu_prefs($name, $new_value=NULL) {
-// set/read preferences
-    global $prefs, $adi_menu_prefs;
-
-    if ($new_value !== NULL) { // save new value
-        set_pref('adi_menu_'.$name, $new_value, 'adi_menu_admin', 2);
-        $prefs['adi_menu_'.$name] = get_pref('adi_menu_'.$name, $new_value, TRUE);
-    }
-    // take value from $prefs or, if not set, from $adi_menu_prefs[])
-    isset($prefs['adi_menu_'.$name]) ? $value = $prefs['adi_menu_'.$name] : $value = $adi_menu_prefs[$name];
-    return $value;
-}
-
-function adi_menu_loop_check($section_list, $parent, $ancestors=array()) {
+function adi_menu_loop_check($section_list, $parent, $ancestors = array()) {
 // check for section parent/child loops, return TRUE if loop found
 
     if (empty($parent)) // no more ancestors
@@ -1173,7 +1185,7 @@ function adi_menu_loop_check($section_list, $parent, $ancestors=array()) {
         if (array_key_exists($parent, $ancestors)) // loop found
             return TRUE;
         else {
-            $ancestors[$parent]=''; // add parent to list of ancestors
+            $ancestors[$parent] = ''; // add parent to list of ancestors
             if (array_key_exists($parent, $section_list)) // check that parent exists (section rename issue)
                 return adi_menu_loop_check($section_list, $section_list[$parent]['adi_menu_parent'], $ancestors);
             else
@@ -1182,33 +1194,35 @@ function adi_menu_loop_check($section_list, $parent, $ancestors=array()) {
     }
 }
 
-function adi_menu_parent_check($db_sections) {
+function adi_menu_parent_check($all_sections) {
 // check for missing parents or link IDs
 
     $missing_parents = array();
-    foreach($db_sections as $section => $value) {
+    foreach($all_sections as $section => $value) {
         $parent = $value['adi_menu_parent'];
         if (!empty($parent))
-            if (!array_key_exists($parent, $db_sections)) // check that parent exists (section deleted/renamed?)
+            if (!array_key_exists($parent, $all_sections)) // check that parent exists (section deleted/renamed?)
                 $missing_parents[$section] = $parent;
     }
+
     return $missing_parents;
 }
 
-function adi_menu_redirect_section_check($db_sections) {
+function adi_menu_redirect_section_check($all_sections) {
 // check section redirects
 
     $missing_sections = array();
-    foreach($db_sections as $section => $value) {
+    foreach($all_sections as $section => $value) {
         $redirect_section = $value['adi_menu_redirect_section'];
         if (!empty($redirect_section))
-            if (!array_key_exists($redirect_section, $db_sections)) // check that redirect section exists (section deleted/renamed?)
+            if (!array_key_exists($redirect_section, $all_sections)) // check that redirect section exists (section deleted/renamed?)
                 $missing_sections[$section] = $redirect_section;
     }
+
     return $missing_sections;
 }
 
-function adi_menu_redirect_category_check($db_sections) {
+function adi_menu_redirect_category_check($all_sections) {
 // check category redirects
 // TODO - make this non-DB (& for category_popup as well)
 
@@ -1217,7 +1231,7 @@ function adi_menu_redirect_category_check($db_sections) {
     $db_cats = safe_column('name', 'txp_category', 'name != "root" AND type="article"');
 
     if ($db_cats)
-        foreach($db_sections as $section => $value) {
+        foreach($all_sections as $section => $value) {
             $redirect_category = $value['adi_menu_redirect_category'];
             if (!empty($redirect_category))
                 if (!array_key_exists($redirect_category, $db_cats)) // check that redirect section exists (section deleted/renamed?)
@@ -1227,11 +1241,11 @@ function adi_menu_redirect_category_check($db_sections) {
     return $missing_categories;
 }
 
-function adi_menu_redirect_link_check($db_sections) {
+function adi_menu_redirect_link_check($all_sections) {
 // check link redirects
 
     $missing_links = array();
-    foreach($db_sections as $section => $value) {
+    foreach($all_sections as $section => $value) {
         $link = $value['adi_menu_redirect_link'];
         if ($link)
             if (!adi_menu_get_link($link)) // check that link exists (link deleted?)
@@ -1246,10 +1260,7 @@ function adi_menu_get_link($link_id) {
 
     $url = '';
     if ($link_id) {
-        $sql_fields = 'url';
-        $sql_table = 'txp_link';
-        $sql_where = 'id='.$link_id;
-        $a = safe_row($sql_fields, $sql_table, $sql_where);
+        $a = safe_row('url', 'txp_link', "id=$link_id");
         if ($a) // check if link ID actually exists
             $url = $a['url'];
         else
@@ -1264,7 +1275,7 @@ function adi_menu_section_sort($a, $b) {
     return $a['adi_menu_sort'] - $b['adi_menu_sort'];
 }
 
-function adi_menu_section_list($sections='', $exclude_list='', $override_exclude=FALSE, $sort='adi_menu_sort') {
+function adi_menu_section_list($sections = '', $exclude_list = '', $override_exclude = FALSE, $sort = 'adi_menu_sort') {
 // create list of required sections in array indexed by section/v_section name =>
 //         'name' => 'section/v_section name'
 //         'title' => 'Section title'
@@ -1272,6 +1283,7 @@ function adi_menu_section_list($sections='', $exclude_list='', $override_exclude
 //         'adi_menu_title' => 'Clone title'
 //         'adi_menu_exclude' => '0/1'
 //         'adi_menu_clone' => '0/1'
+//         'adi_menu_clone_title' => 'clone title'
 //         'adi_menu_sort' => 'x'
 //         'adi_menu_redirect_section' => 'section name'
 //         'adi_menu_redirect_link' => 'link id#'
@@ -1289,15 +1301,18 @@ function adi_menu_section_list($sections='', $exclude_list='', $override_exclude
     $section_list = array();
 
     // decide how big the net's going to be
-    if ($override_exclude && ($override_exclude === TRUE))
-        $bulkq = $bulkvq = "1=1"; // all sections regardless
-    else { // only sections that haven't been excluded in admin (with the possibility of an explicit override later)
-        $bulkq = "adi_menu_exclude = 0";
+    if ($override_exclude && ($override_exclude === TRUE)) {
+        $bulkq = "page != ''"; // all (with-page) sections regardless
+        $bulkvq = "1=1"; // all sections regardless
+    } else { // only sections that haven't been excluded in admin (with the possibility of an explicit override later)
+        $bulkq = "page != '' AND adi_menu_exclude = 0";
         $bulkvq = "exclude = 0";
     }
 
-    if ($adi_menu_debug)
-        echo "ADI_MENU_SECTION_LIST(): sections='$sections'; exclude_list='$exclude_list'; override_exclude='$override_exclude'".br;
+    if ($adi_menu_debug) {
+        echo __FUNCTION__.'():'.br;
+        echo "SUPPLIED: sections='$sections'; exclude_list='$exclude_list'; override_exclude='$override_exclude'".br;
+    }
 
     // it's a start
     $includeq = $bulkq;
@@ -1376,10 +1391,10 @@ function adi_menu_section_list($sections='', $exclude_list='', $override_exclude
     $vq = $includevq.$excludevq.$override_excludevq.$sortq;
 
     if ($adi_menu_debug) {
-        echo "NORMAL QUERY: bulkq='$bulkq'; includeq='$includeq'; excludeq='$excludeq'; override_excludeq='$override_excludeq'; sortq='$sortq'".br;
-        echo $q.br;
-        echo "VIRTUAL QUERY: bulkvq='$bulkvq'; includevq='$includevq'; excludeq='$excludevq'; override_excludevq='$override_excludevq'; sortq='$sortq'".br;
-        echo $vq.br;
+        echo "NORMAL QUERY (COMPONENTS): bulkq='$bulkq'; includeq='$includeq'; excludeq='$excludeq'; override_excludeq='$override_excludeq'; sortq='$sortq'".br;
+        echo "NORMAL QUERY (COMPILED): $q".br;
+        echo "VIRTUAL QUERY (COMPONENTS): bulkvq='$bulkvq'; includevq='$includevq'; excludeq='$excludevq'; override_excludevq='$override_excludevq'; sortq='$sortq'".br;
+        echo "VIRTUAL QUERY (COMPILED): $vq".br;
     }
 
     $hu = isset($prefs['url_base']) ? $prefs['url_base'] : hu;
@@ -1440,9 +1455,7 @@ function adi_menu_section_list($sections='', $exclude_list='', $override_exclude
             if ($section_list && $default_first) { // shift default section to beginning
                 $remember['default'] = $section_list['default']; // remember 'default' element
                 unset($section_list['default']); // remove 'default' element
-//                 $section_list = array_merge($remember, $section_list);
-//??? DON'T USE ARRAY_MERGE - IT'LL RENUMBER NUMERIC KEYS (E.G. SECTION NAME = "2020")
-                $section_list = $remember + $section_list; // join together, 'default' now at beginning
+                $section_list = $remember + $section_list; // join together, 'default' now at beginning ... don't use array_merge - it'll renumber numeric keys (e.g. section name = "2020")
             }
         }
 
@@ -1452,29 +1465,44 @@ function adi_menu_section_list($sections='', $exclude_list='', $override_exclude
     return $section_list;
 }
 
-function adi_menu_article_tab($event, $step, $default, $rs) {
-// tweak the article tab (section popup list)
+function adi_menu_section_titles($event, $step, $default, $data) {
+// ripped off from rah_section_titles
 
-//     if ((adi_menu_prefs('write_tab_select_format') != 'name') || adi_menu_prefs('write_tab_select_indent')) {
-        $pattern = '#name="Section".*</select>#sU';
-        $insert = 'adi_menu_article_section_popup';
-        $out = preg_replace_callback($pattern, $insert, $default);
-        return $out;
-//     }
-//     else // don't fiddle with anything
-//         return $default;
+    $rs = safe_rows('name, title', 'txp_section', "name != 'default' ORDER BY title ASC");
+    if (!$rs) return;
+
+    $section_levels = (adi_menu_prefs('write_tab_select_indent') ? adi_menu_section_levels(adi_menu_hierarchy(adi_menu_section_list('', '', TRUE))) : array());
+    $title_mode = (adi_menu_prefs('write_tab_select_format') != 'name');
+
+    $out = array();
+    foreach ($rs as $a) {
+        extract($a);
+        $indent = (isset($section_levels[$name]) ? str_repeat('- ', $section_levels[$name] - 1) : '' ); // indent according to hierarchy (if section_levels set up)
+        $out[$a['name']] = $indent.($title_mode ? $a['title'] : $a['name']); // convert name to title
+    }
+
+    if ($section_levels) { // indenture
+        // order according to menu hierarchy
+        $ordered_out = array();
+        foreach ($section_levels as $section_name => $level) {
+            if ($section_name == 'default')
+                if (!adi_menu_prefs('write_tab_select_default')) // only allow it if there are some 'default' articles
+                    continue;
+            $ordered_out[$section_name] = $out[$section_name];
+            unset($out[$section_name]);
+        }
+        $out = $ordered_out + $out; // add leftovers (i.e. pageless) back in
+    }
+
+    return
+        preg_replace(
+            '/<select[^>]*?>[\s\S]*?<\/select>/'
+            , selectInput('Section', $out, $data['Section'], '', '', 'section')
+            , $default
+        );
 }
 
-function adi_menu_section_indent($level) {
-// create indent for section in popup
 
-    $level -= 1;
-    $out = '';
-    if ($level)
-        for ($x=1; $x <= $level; $x++)
-            $out .= sp.sp;
-    return $out;
-}
 
 function adi_menu_article_section_popup() {
 // generate markup for section popup menu for Article/Write tab
@@ -1528,16 +1556,14 @@ function adi_menu_article_section_popup() {
     return $out;
 }
 
-function adi_menu_section_levels($hierarchy, $level=1) {
+function adi_menu_section_levels($hierarchy, $level = 1) {
 // create list, indexed by section, of level in hierarchy (top = 1 etc.)
 
     $section_levels = array();
     foreach ($hierarchy as $index => $section)
         if (!$section['clone']) { // ignore clones
             $section_levels[$index] = $level; // set level in array, indexed by section name
-//             $section_levels = array_merge($section_levels, adi_menu_section_levels($section['child'], $level+1));
-            //??? //??? DON'T USE ARRAY_MERGE - IT'LL RENUMBER NUMERIC KEYS (E.G. SECTION NAME = "2020")
-            $section_levels = $section_levels + adi_menu_section_levels($section['child'], $level + 1);
+            $section_levels = $section_levels + adi_menu_section_levels($section['child'], $level + 1); // don't use array_merge - it'll renumber numeric keys (e.g. section name = "2020")
         }
 
     return $section_levels;
@@ -1580,12 +1606,14 @@ function adi_menu_lineage($section_list, $child) {
     $crumb = adi_menu_htmlentities($crumb, $escape);
     if (($s == $child) && (!$link_last) && ($is_article_list)) // if (last breadcrumb) AND (link_last=0) AND (not single article), switch off link mode
         $link = FALSE;
-    $link ? // output section link, maybe
-//         $out[] = tag($crumb, 'a', ' class="'.$linkclass.'" href="'.$section_list[$child]['url'].'"') :
-        $out[] = tag($crumb, 'a', ' '.($linkclass ? 'class="'.$linkclass.'"' : '').' href="'.$section_list[$child]['url'].'"') :
+
+    if ($link) // output section link, maybe
+        $out[] = href($crumb, $section_list[$child]['url'], ($linkclass ? 'class="'.$linkclass.'"' : ''));
+    else
         $out[] = $crumb;
 
-    if ($s != $child) $out[] = $separator; // add separator if not last crumb
+    if ($s != $child) // add separator if not last crumb
+        $out[] = $separator;
 
     return $out;
 }
@@ -1594,13 +1622,12 @@ function adi_menu_breadcrumb($atts) {
 // <txp:adi_menu_breadcrumb /> tag
     global $s, $default_first, $adi_menu_lineage_count, $adi_menu_breadcrumb_atts;
 
-    $default_first="1"; // used by adi_menu_section_list()
+    $default_first = "1"; // used by adi_menu_section_list()
 
 //     extract(lAtts(array(
 //         'label'               => 'You are here: ',    // string to prepend to the output
 //         'labeltag'            =>    '',               // tag to wrap around label
 //         'separator'           => ' &#187; ',          // string to be used as the breadcrumb separator (default: >>)
-//         'sep'                 => '',                  // deprecated - use 'separator'
 //         'title'               => '1',                 // display section titles or not
 //         'link'                => '1',                 // output sections as links or not
 //         'linkclass'           => 'noline',            // class for breadcrumb links
@@ -1617,7 +1644,6 @@ function adi_menu_breadcrumb($atts) {
         'label'                => 'You are here: ',    // string to prepend to the output
         'labeltag'             =>    '',               // tag to wrap around label
         'separator'            => ' &#187; ',          // string to be used as the breadcrumb separator (default: >>)
-        'sep'                  => '',                  // deprecated - use 'separator'
         'title'                => '1',                 // display section titles or not
         'link'                 => '1',                 // output sections as links or not
         'linkclass'            => 'noline',            // class for breadcrumb links
@@ -1630,16 +1656,16 @@ function adi_menu_breadcrumb($atts) {
     extract($adi_menu_breadcrumb_atts);
 
     $default_title = trim($default_title);
-    if ($sep) $separator = $sep; // deprecated attribute 'sep', use 'separator' instead
 
     /* adi_menu_breadcrumb - main procedure */
     $section_list = adi_menu_section_list('', '', TRUE);
     $adi_menu_lineage_count = 0; // global variable used instead of static, so that adi_menu_breadcrumb can have multiple instances
     $out = adi_menu_lineage($section_list, $s);
+
     return implode($out);
 }
 
-function adi_menu_info($atts, $thing, $if_tag=0) {
+function adi_menu_info($atts, $thing, $if_tag = 0) {
 // combined <txp:adi_menu_info /> & <txp:adi_menu_if_info /> tag function
 // <txp:adi_menu_info /> returns specific menu information for current/specified section(s)
 // <txp:adi_menu_if_info /> - if/then/else conditional
@@ -1743,17 +1769,14 @@ function adi_menu_info($atts, $thing, $if_tag=0) {
     }
 
     if ($debug) {
-        if ($if_tag)
-            echo "adi_menu_if_info ";
-        else
-            echo "adi_menu_info ";
-        echo "attributes:";
+        echo ($if_tag ? 'adi_menu_if_info ' : 'adi_menu_info ');
+        echo 'attributes:';
         dmp($atts);
-        echo "sections:";
+        echo 'sections:';
         dmp($sections);
-        echo "type mapping:";
+        echo 'type mapping:';
         dmp($adi_menu_info_types);
-        echo "types:";
+        echo 'types:';
         dmp($types);
         if ($if_tag)
             echo "condition=$condition".br;
@@ -1761,7 +1784,7 @@ function adi_menu_info($atts, $thing, $if_tag=0) {
     }
 
     if ($if_tag)
-        return parse(EvalElse($thing, $condition));
+        return parse($thing, $condition);
     else
         return doWrap($out, $wraptag, $break, $class, $breakclass);
 }
@@ -1795,11 +1818,11 @@ function adi_menu_get_article_attr($article_attr) {
     return $attributes;
 }
 
-function adi_menu_get_articles($section_list, $section_article_list, $category_article_list=array(), $debug=FALSE) {
+function adi_menu_get_articles($section_list, $section_article_list, $category_article_list = array(), $debug = FALSE) {
 // create list of articles from database, indexed by section/category & sub-indexed by article id (prefixed with 'article_')
 // - sort value taken from article_sort attribute
 // - much code taken from publish.php doArticles()
-    global $s, $c, $adi_menu_debug, $article_sort, $section_article_sort, $article_attr, $active_articles_only, $new_article_mode, $cat_article_sort, $category_article_sort, $cat_article_attr, $adi_menu_vs_prefix;
+    global $s, $c, $adi_menu_debug, $article_sort, $section_article_sort, $article_attr, $active_articles_only, $cat_article_sort, $category_article_sort, $cat_article_attr, $adi_menu_vs_prefix;
 
     // anything to do?
     if (!($section_article_list || $category_article_list))
@@ -1818,15 +1841,12 @@ function adi_menu_get_articles($section_list, $section_article_list, $category_a
     }
 
     // blankety blank
-    $section=$category=$search=$id=$excerpted=$month=$author=$keywords=$custom=$frontpage='';
+    $section = $category = $search = $id = $excerpted = $month = $author = $keywords = $custom = $frontpage = '';
 
     // set defaults
     $statusq = ' AND Status = 4';
     $time = " AND Posted <= NOW()";
-    if ($new_article_mode)
-        $limit = 9999;
-    else
-        $limit = 10;
+    $limit = 9999;
     $offset = 0;
 
     // analyse article attributes
@@ -1844,7 +1864,7 @@ function adi_menu_get_articles($section_list, $section_article_list, $category_a
                 break;
             case 'excerpted':
                 if ($value)
-                    $excerpted = ($value=='y')  ? " AND Excerpt !=''" : '';
+                    $excerpted = ($value == 'y')  ? " AND Excerpt !=''" : '';
                 break;
             case 'keywords':
                 if ($value) {
@@ -1947,10 +1967,10 @@ function adi_menu_get_articles($section_list, $section_article_list, $category_a
         // database action
         $rs = safe_rows_start(
                 "ID,Title,url_title,Posted,Section" // needed for permlinkurl()
-                ,'textpattern',
-                $where.$sortq.' LIMIT '.intval($offset).', '.intval($limit)
+                , 'textpattern'
+                , $where.$sortq.' LIMIT '.intval($offset).', '.intval($limit)
             );
-        while($a = nextRow($rs)) {
+        while ($a = nextRow($rs)) {
             $this_index = 'article_'.$a['ID']; // create unique array index - for ID 23, index is article_23
             $article_list[$this_item][$this_index]['title'] = html_entity_decode($a['Title']); // ampersands are escaped in article titles (but not in section titles)
             $article_list[$this_item][$this_index]['url'] = permlinkurl($a);
@@ -1987,6 +2007,7 @@ function adi_menu_speaking_block($name, $redirect_section) {
         $sb_article_tag = '<txp:article_custom '.$sb_tag_attr.'><txp:excerpt /></txp:article_custom>';
 
     $sb_text = trim(parse($sb_article_tag));
+
     if ($sb_text) // don't want empty spans
         return '<span class="speaking_block">'.$sb_text.'</span>';
 }
@@ -2010,24 +2031,22 @@ function adi_menu_sort_hierarchy($a, $b) {
         $res = strcasecmp($a["sort"], $b["sort"]);
     else // no sort (i.e. database order)
         $res = 0;
+
     return $res;
 }
 
-// function adi_menu_hierarchy($section_list, $article_list=array(), $cat_article_list=array(), $this_section=NULL, $clone=0) {
-function adi_menu_hierarchy($section_list, $article_list=array(), $cat_article_list=array(), $this_section='', $clone=0) {
+function adi_menu_hierarchy($section_list, $article_list = array(), $cat_article_list = array(), $this_section = '', $clone = 0) {
 // create $hierarchy, indexed by section/article_ID, using information from $section_list (and possibly article lists too)
-    global $clone_title, $new_article_mode, $article_position, $default_first, $articles, $exclude_clone, $active_articles_only;
+    global $clone_title, $article_position, $default_first, $articles, $exclude_clone, $active_articles_only;
 
     $hierarchy = array();
     $not_restricted = TRUE;
     // active articles only?
-//     if (($this_section !== NULL) && $active_articles_only)
     if (($this_section !== '') && $active_articles_only)
         $not_restricted = adi_menu_is_current($this_section, $section_list[$this_section]['adi_menu_redirect_category']);
 
     // insert "BEFORE" articles
-//     if (($this_section !== NULL) && ($article_position == 'before') && $new_article_mode && $articles && $not_restricted) {
-    if (($this_section !== '') && ($article_position == 'before') && $new_article_mode && $articles && $not_restricted) {
+    if (($this_section !== '') && ($article_position == 'before') && $articles && $not_restricted) {
         $this_category = $section_list[$this_section]['adi_menu_redirect_category'];
         if ($this_category) { // category articles
             if (array_key_exists($this_category, $cat_article_list))
@@ -2071,25 +2090,20 @@ function adi_menu_hierarchy($section_list, $article_list=array(), $cat_article_l
             $hierarchy[$section_name]['redirect_link'] = $section_data['adi_menu_redirect_link'];
             $hierarchy[$section_name]['redirect_category'] = $section_data['adi_menu_redirect_category'];
             $hierarchy[$section_name]['alt_title'] = $section_data['adi_menu_alt_title'];
-            $hierarchy[$section_name]['child'] = adi_menu_hierarchy($section_list, $article_list, $cat_article_list, $section_name, $section_data['adi_menu_clone']); // delve deper
+            $hierarchy[$section_name]['child'] = adi_menu_hierarchy($section_list, $article_list, $cat_article_list, $section_name, $section_data['adi_menu_clone']); // delve deeper
         }
     }
 
     // insert "AFTER/DOVETAIL" articles
-//     if (($this_section !== NULL) && !($article_position == 'before') && $new_article_mode && $articles && $not_restricted) { // default to inserting articles AFTER sections (i.e. not "before")
-    if (($this_section !== '') && !($article_position == 'before') && $new_article_mode && $articles && $not_restricted) { // default to inserting articles AFTER sections (i.e. not "before")
+    if (($this_section !== '') && !($article_position == 'before') && $articles && $not_restricted) { // default to inserting articles AFTER sections (i.e. not "before")
         $this_category = $section_list[$this_section]['adi_menu_redirect_category'];
         if ($this_category) { // category articles
             if (array_key_exists($this_category, $cat_article_list))
-//                 $hierarchy = array_merge($hierarchy, $cat_article_list[$this_category]);
-                //??? DON'T USE ARRAY_MERGE - IT'LL RENUMBER NUMERIC KEYS (E.G. SECTION NAME = "2020")
-                $hierarchy = $hierarchy + $cat_article_list[$this_category];
+                $hierarchy = array_merge($hierarchy, $cat_article_list[$this_category]); // array_merge OK here
         }
         else
             if (array_key_exists($this_section, $article_list)) // section articles
-//                 $hierarchy = array_merge($hierarchy, $article_list[$this_section]);
-                //??? DON'T USE ARRAY_MERGE - IT'LL RENUMBER NUMERIC KEYS (E.G. SECTION NAME = "2020")
-                $hierarchy = $hierarchy + $article_list[$this_section];
+                $hierarchy = array_merge($hierarchy, $article_list[$this_section]); // array_merge OK here
         if ($article_position == 'dovetail') // sort current level of hierarchy (sections AND articles)
             uasort($hierarchy, "adi_menu_sort_hierarchy");
     }
@@ -2116,7 +2130,7 @@ function adi_menu_prune($old_hierarchy, $include_list, $section_levels, $sibling
             $hierarchy[$section] = $section_data; // copy section (WITHOUT children)
         }
         else if ($include_siblings) { // NOT IN LIST: but check if sibling
-            foreach ($include_list as $this_section) { //??? adi_menu2 not coming up
+            foreach ($include_list as $this_section) {
                 if (array_search($section, $siblings[$this_section])) {
                         $section_data['child'] = array(); // remove the kids
                         $hierarchy[$section] = $section_data; // copy section (WITHOUT children)
@@ -2138,7 +2152,7 @@ function adi_menu_prune($old_hierarchy, $include_list, $section_levels, $sibling
 function adi_menu_siblings($section_list) {
 // create list of siblings
 
-    $siblings = array();
+    $parents = $siblings = array();
 
     foreach ($section_list as $section => $section_data)
         $siblings[$section] = array();
@@ -2175,9 +2189,7 @@ function adi_menu_descendants($hierarchy, $parent) {
             // follow the family tree
             adi_menu_descendants($section['child'], $index);
             // add child's descendants to parent's list
-//             $descendant_list[$parent] = array_merge($descendant_list[$parent], $descendant_list[$index]);
-            //??? DON'T USE ARRAY_MERGE - IT'LL RENUMBER NUMERIC KEYS (E.G. SECTION NAME = "2020")
-            $descendant_list[$parent] = $descendant_list[$parent] + $descendant_list[$index];
+            $descendant_list[$parent] = array_merge($descendant_list[$parent], $descendant_list[$index]); // must use array_merge (not array addition)
         }
         else // create empty list for the childless
             $descendant_list[$index] = array();
@@ -2186,7 +2198,7 @@ function adi_menu_descendants($hierarchy, $parent) {
     return $descendant_list;
 }
 
-function adi_menu_get_ancestors($section_list, $this_generation, $ancestor_list=array()) {
+function adi_menu_get_ancestors($section_list, $this_generation, $ancestor_list = array()) {
 // find all ancestors of given section (in order: parent, grandparent, great-grandparent ...)
 
     $parent = $section_list[$this_generation]['adi_menu_parent'];
@@ -2280,7 +2292,7 @@ function adi_menu_active($index, $hierarchy, $active_section, $active_parent, $a
     }
 }
 
-function adi_menu_is_current($this_section, $this_category='', $debug=FALSE) {
+function adi_menu_is_current($this_section, $this_category = '', $debug = FALSE) {
 // determine whether supplied section or catgeory ($is_section=FALSE) is current or not
 // i.e. section = $s OR force_current attribute has supplied a match
     global $s, $c, $force_current;
@@ -2310,24 +2322,28 @@ function adi_menu_is_current($this_section, $this_category='', $debug=FALSE) {
 
 function adi_menu_markup($hierarchy, $level) {
 // output <ul>/<li> markup from given $hierarchy
-    global $prefs, $menu_id, $parent_class, $active_class, $s, $c, $class, $link_span, $list_id, $list_id_prefix, $active_li_class, $articles, $include_children, $active_parent, $list_span, $active_ancestors, $descendant_list, $first_class, $last_class, $list_prefix, $prefix_class, $suppress_url, $suppress_url_sections, $new_article_mode, $article_class, $pretext, $active_article_class, $speaking_block, $label, $labeltag, $label_class, $label_id, $current_children_only, $adi_menu_escape, $odd_even, $ignore_alt_title, $adi_menu_vs_prefix, $exclude_niblings;
+    global $prefs, $menu_id, $parent_class, $active_class, $s, $c, $class, $link_span, $list_id, $list_id_prefix, $active_li_class, $articles, $include_children, $active_parent, $list_span, $active_ancestors, $descendant_list, $first_class, $last_class, $list_prefix, $prefix_class, $suppress_url, $suppress_url_sections, $article_class, $pretext, $active_article_class, $speaking_block, $label, $labeltag, $label_class, $label_id, $current_children_only, $adi_menu_escape, $odd_even, $ignore_alt_title, $adi_menu_vs_prefix, $exclude_niblings, $parent_link_class, $sub_menu_class, $sub_menu_link_class;
 
     $out = array();
 
     if (empty($hierarchy))
         return $out; // bomb out if hierarchy is empty
 
-    $css_id = $css_class = '';
+    $ul_id = $ul_classes = '';
     if (!$level) { // set HTML ID & CSS class on top level <ul> only
-        if ($menu_id) $css_id = ' id="'.$menu_id.'"';
-        if ($class) $css_class = ' class="'.$class.'"';
+        if ($menu_id) $ul_id = ' id="'.$menu_id.'"';
+        if ($class) $ul_classes .= $class;
         if ($label)
             $labeltag ?
                 $out[] = doTag($label, $labeltag, $label_class, '', $label_id) :
                 $out[] = $label;
     }
+    // add submenu ul class (e.g. dropdown-menu)
+    if ($level && $sub_menu_class)
+        $ul_classes .= $sub_menu_class;
 
-    $out[] = '<ul'.$css_id.$css_class.'>';
+    $class_attr = ($ul_classes ? ' class="'.trim($ul_classes).'"' : '');
+    $out[] = '<ul'.$ul_id.$class_attr.'>';
 
     // get list of section names from $hierarchy and determine first & last
     $keys = array_keys($hierarchy);
@@ -2338,73 +2354,57 @@ function adi_menu_markup($hierarchy, $level) {
     foreach ($hierarchy as $section => $data) {
         $odd = !$odd;
         $parent = !empty($data['child']);
-        $li_class_list = '';
+        $li_classes = '';
         if ($parent && $include_children)  // not a parent if not including the children
-            $li_class_list .= ' '.$parent_class;
+            $li_classes .= ' '.$parent_class;
         $active_section = FALSE;
         $active_article = FALSE;
         if ($data['section']) {
             if ($data['redirect_category']) {
                 $active_section = adi_menu_is_current($section, $data['redirect_category']); // redirected to current category?
-            }
-            else if (!$c) { // active section? (avoid false-positive - category page's section is "default")
+            } else if (!$c) { // active section? (avoid false-positive - category page's section is "default")
                 $active_section = adi_menu_is_current($section);
                 if ($data['redirect_section']) // section redirected to active section?
                     $active_section = adi_menu_is_current($data['redirect_section']);
             }
         }
         else { // $section is an article!
-            $li_class_list .= ' '.$article_class;
+            $li_classes .= ' '.$article_class;
             $article_id = preg_replace('/article_/', '', $section); // convert 'article_id#' to 'id#'
             $active_article = ($article_id == $pretext['id']); // is the article active?
         }
         if ($data['redirect_section'] || $data['redirect_link'] || $data['redirect_category']) // redirected (to section/link/category)
-            $li_class_list .= ' menu_redirect';
+            $li_classes .= ' menu_redirect';
         if ($data['redirect_link']) // redirected to link
-            $li_class_list .= ' menu_ext_link';
+            $li_classes .= ' menu_ext_link';
         if ($data['redirect_category']) // redirected to category
-            $li_class_list .= ' menu_category';
+            $li_classes .= ' menu_category';
         if ($data['virtual_section']) // virtual section
-            $li_class_list .= ' menu_virtual';
+            $li_classes .= ' menu_virtual';
         $title = adi_menu_htmlentities($data['title'], $adi_menu_escape);
         if ($data['alt_title'] && !$ignore_alt_title) { // alternative title specified
-            $li_class_list .= ' menu_alt_title';
+            $li_classes .= ' menu_alt_title';
             $title = adi_menu_htmlentities($data['alt_title'], $adi_menu_escape);
         }
-        if (!($data['section']) && ($prefs['title_no_widow'])) // dewidow article title if required
-            $title = noWidow($title);
         $url = $data['url']; // although URL may get suppressed later ...
         $clone = $data['clone'];
         $first = ($section == $first_section) && $first_class; // only flag first section if required
         $last = ($section == $last_section) && $last_class; // only flag last section if required
-        $link_span ?
-            $link_content = '<span>'.$title.'</span>' :
-            $link_content = $title;
+        $link_content = ($link_span ? span($title) :  $title);
         if ($speaking_block)
-            $link_content = $link_content.adi_menu_speaking_block($section, $data['redirect_section']);
+            $link_content .= adi_menu_speaking_block($section, $data['redirect_section']);
         if ($clone) { // section/category is a clone
             $clone_suffix = '_clone'; // make ID unique
-            $li_class_list .= ' menu_clone';
+            $li_classes .= ' menu_clone';
         }
         else
             $clone_suffix = '';
-        $list_id ?
-            $li_id = ' id="'.$list_id_prefix.$section.$clone_suffix.'"' :
-            $li_id = '';
+        $li_id = ($list_id ? ' id="'.$list_id_prefix.$section.$clone_suffix.'"' : '');
         $active_li = $active_li_class && adi_menu_active($section, $hierarchy, $active_section, $active_parent, $active_article);
         if ($active_li)
-            $li_class_list .= ' '.$active_li_class;
+            $li_classes .= ' '.$active_li_class;
         $article_list = '';
-        $article_parent = FALSE; // NOT NEEDED IN NEW SYSTEM: $PARENT WORKS FOR SECTION & ARTICLE PARENTS
-        if (!$parent && $articles && !$new_article_mode) // not a section parent so check for articles in advance
-            if (!$clone) { // but don't want duplicates
-                $article_list = adi_menu_articles($section, 'ul');
-                if ($article_list != "") { // articles found, so add parent class (i.e. article parent)
-                    $li_class_list .= ' '.$parent_class;
-                    $article_parent = TRUE;
-                }
-            }
-        if ($parent || $article_parent) // suppress URL on parents only
+        if ($parent) // suppress URL on parents only
             switch ($suppress_url) {
                 case 'all':
                     $url = '#';
@@ -2427,18 +2427,27 @@ function adi_menu_markup($hierarchy, $level) {
             $suppressions = do_list($suppress_url_sections);
             if (array_search($section, $suppressions) !== FALSE) $url = '#'; // no link for you chummy
         }
-        if ($first) $li_class_list .= ' '.$first_class;
-        if ($last) $li_class_list .= ' '.$last_class;
-        if ($odd_even) $li_class_list .= ' '.(($odd) ? 'menu_odd' : 'menu_even');
-        $li_class_list ?
-            $css_class = ' class="'.trim($li_class_list).'"' :
-            $css_class = '';
-        $out[] = '<li'.$li_id.$css_class.'>';
-        $active_a = $active_class && adi_menu_active($section, $hierarchy, $active_section, $active_parent, $active_article);
+        if ($first) $li_classes .= ' '.$first_class;
+        if ($last) $li_classes .= ' '.$last_class;
+        if ($odd_even) $li_classes .= ' '.(($odd) ? 'menu_odd' : 'menu_even');
+
+        $class_attr = ($li_classes ? ' class="'.trim($li_classes).'"' : '');
+        $out[] = '<li'.$li_id.$class_attr.'>';
+
         if ($list_span) $out[] = '<span>';
-        if ($list_prefix) $out[] = '<span class="'.$prefix_class.'">'.$list_prefix.'</span>';
-        $out[] = tag($link_content, 'a', ($active_a ? ' class="'.$active_class.'"' : '').' href="'.$url.'"');
+        if ($list_prefix) $out[] = span($list_prefix, 'class="'.$prefix_class.'"');
+
+        $active_a = $active_class && adi_menu_active($section, $hierarchy, $active_section, $active_parent, $active_article);
+        // <a> classes
+        $a_classes = ($active_a ? $active_class : ''); // active class
+        $a_classes .= ($parent ? ' '.$parent_link_class : ''); // add parent link class (e.g. dropdown-toggle)
+        $a_classes .= ($level && !$parent ? ' '.$sub_menu_link_class : ''); // add child link class (e.g. dropdown-item)
+
+        $class_attr = ($a_classes ? ' class="'.trim($a_classes).'"' : '');
+        $out[] = href($link_content, $url, $class_attr);
+
         if ($list_span) $out[] = '</span>';
+
         // the fact that we're here means that siblings are already included, so now decide if kids should be sought out
         $find_the_kids = TRUE;
         if ($current_children_only) // only immediate children of active (i.e. no grandchildren or niblings)
@@ -2448,16 +2457,8 @@ function adi_menu_markup($hierarchy, $level) {
             $find_the_kids = $active_section || (array_search($s, $descendant_list[$section]) !== FALSE) || (array_search($section, $descendant_list[$s]) !== FALSE); // active section, ancestor of active or descendant of active
         if ($parent && $include_children && $find_the_kids) // find the kids (but only if include_children=1)
             $out = array_merge($out, adi_menu_markup($data['child'], $level+1));
-        else if ($articles && !$new_article_mode) // not a section parent but an article parent so insert articles here
-            $out[] = $article_list;
         $out[] = "</li>";
     }
-
-    if (isset($section) && $articles && !$new_article_mode)
-    // above condition prevents tag errors with attribute combinations that result in no sections
-    //  e.g. (include_parent="0" && sections="all childless") OR (sections="list" && exclude="same list")
-        if ($data['parent'] != '') // last sibling was a child, so check for parent's articles here
-            $out[] = adi_menu_articles($data['parent'], '');
 
     $out[] = "</ul>";
 
@@ -2525,7 +2526,7 @@ function adi_menu_htmlentities($string, $method) {
 
 function adi_menu($atts) {
 // the <txp:adi_menu /> tag
-    global $prefs, $s, $pretext, $out, $menu_id, $parent_class, $active_class, $include_parent, $include_childless, $default_title, $default_first, $clone_title, $class, $link_span, $list_id, $list_id_prefix, $active_li_class, $articles, $article_attr, $section_article_list, $include_children, $active_parent, $active_articles_only, $list_span, $active_ancestors, $descendant_list, $first_class, $last_class, $list_prefix, $prefix_class, $suppress_url, $suppress_url_sections, $new_article_mode, $article_class, $article_position, $active_article_class, $article_sort, $section_levels, $speaking_block, $speaking_block_form, $label, $labeltag, $label_class, $label_id, $current_children_only, $adi_menu_escape, $adi_menu_prefs, $odd_even, $section_article_sort, $category_article_sort, $ignore_alt_title, $cat_section_map, $exclude_clone, $cat_article_sort, $cat_article_attr, $force_current, $include_top_level, $include_siblings, $current_descendants_only, $exclude_niblings, $relative_urls;
+    global $prefs, $s, $pretext, $out, $menu_id, $parent_class, $active_class, $include_parent, $include_childless, $default_title, $default_first, $clone_title, $class, $link_span, $list_id, $list_id_prefix, $active_li_class, $articles, $article_attr, $section_article_list, $include_children, $active_parent, $active_articles_only, $list_span, $active_ancestors, $descendant_list, $first_class, $last_class, $list_prefix, $prefix_class, $suppress_url, $suppress_url_sections, $article_class, $article_position, $active_article_class, $article_sort, $section_levels, $speaking_block, $speaking_block_form, $label, $labeltag, $label_class, $label_id, $current_children_only, $adi_menu_escape, $adi_menu_prefs, $odd_even, $section_article_sort, $category_article_sort, $ignore_alt_title, $cat_section_map, $exclude_clone, $cat_article_sort, $cat_article_attr, $force_current, $include_top_level, $include_siblings, $current_descendants_only, $exclude_niblings, $relative_urls, $parent_link_class, $sub_menu_class, $sub_menu_link_class;
 
     extract(lAtts(array(
         'active_ancestors'         => '0',              // set active class on all ancestors of current section
@@ -2570,16 +2571,17 @@ function adi_menu($atts) {
         'labeltag'                 => '',               // tag to wrap around label
         'last_class'               => '',               // CSS class on last <li> of list
         'link_span'                => '0',              // <span> contents of link or not
-        'list_id_prefix'            => 'menu_',          // <li> ID prefix
+        'list_id_prefix'           => 'menu_',          // <li> ID prefix
         'list_id'                  => '0',              // output <li> IDs or not
-        'list_prefix'               => '',               // prefix added to menu list items
+        'list_prefix'              => '',               // prefix added to menu list items
         'list_span'                => '0',              // <span> contents of <li> or not
         'menu_id'                  => 'mainmenu',       // CSS ID for top level <ul>
-        'new_article_mode'         => '1',              // new article mode on by default
         'odd_even'                 => '0',              // CSS classes applied to odd/even list items
         'override_exclude'         => '',               // list of sections, excluded in admin, to be included
         'parent_class'             => 'menuparent',     // CSS class for parent <li>
-        'prefix_class'              => 'menu_prefix',     // class added to <span> around prefixes
+        'prefix_class'             => 'menu_prefix',    // class added to <span> around prefixes
+        'parent_link_class'        => '',               // CSS class for parent <a>
+        'sub_menu_class'           => '',               // CSS class for parent <ul>
         'relative_urls'            => '0',              // urls without domain or http/s protocol
         'role'                     => 'navigation',     // ARIA role applied to wraptag
         'sections'                 => '',               // list of sections in menu (default = all)
@@ -2587,10 +2589,10 @@ function adi_menu($atts) {
         'speaking_block_form'      => '',               // alternative form for speaking block
         'speaking_block'           => '0',              // enable <span>speaking ... block</span>
         'sub_menu_level'           => '0',              // the level of the submenu to output
+        'sub_menu_link_class'      => '',               // class for all <a> in submenus
         'sub_menu'                 => '0',              // generate submenu of current section
         'suppress_url_sections'    => '',               // list of sections to get URL "#"
         'suppress_url'             => '0',              // set URL to "#" on section links
-        'test'                     => '0',              // switch on new article mode in 1.0 (now ignored) **DEPRECATED**
         'wraptag_class'            => 'menu_wrapper',   // class for wraptag
         'wraptag_id'               => '',               // id for wraptag
         'wraptag'                  => '',               // wrap a tag around <ul>
@@ -2601,10 +2603,6 @@ function adi_menu($atts) {
 
     // deprecated attributes
     if (isset($atts['clone_title'])) trigger_error(gTxt('deprecated_attribute', array('{name}' => 'clone_title')), E_USER_NOTICE);
-    if (isset($atts['test'])) trigger_error(gTxt('deprecated_attribute', array('{name}' => 'test')), E_USER_NOTICE);
-    if (isset($atts['new_article_mode'])) trigger_error(gTxt('deprecated_attribute', array('{name}' => 'new_article_mode')), E_USER_NOTICE);
-    // deprecated mode
-    if (!$new_article_mode) trigger_error(gTxt('deprecated_configuration', array('{name}' => 'new_article_mode="0"')), E_USER_NOTICE);
 
     // tidy up supplied attribute values
     $children_only = 0; // ex-attribute
@@ -2728,8 +2726,7 @@ function adi_menu($atts) {
             $section_article_exclude = do_list($article_exclude);
         // section_article_list = section_article_include minus section_article_exclude
         $section_article_list = adi_menu_array_subtract($section_article_include, $section_article_exclude);
-        if ($new_article_mode)
-            $article_list = adi_menu_get_articles($section_list, $section_article_list, array(), $debug);
+        $article_list = adi_menu_get_articles($section_list, $section_article_list, array(), $debug);
         // CATEGORIES
         // categories that are allowed articles
         $category_list = safe_column('name', 'txp_category', "name != 'root' AND type='article'");
@@ -2744,8 +2741,7 @@ function adi_menu($atts) {
             $category_article_exclude = do_list($cat_article_exclude);
         // category_article_list = category_article_include minus category_article_exclude
         $category_article_list = adi_menu_array_subtract($category_article_include, $category_article_exclude);
-        if ($new_article_mode)
-            $cat_article_list = adi_menu_get_articles($section_list, array(), $category_article_list, $debug);
+        $cat_article_list = adi_menu_get_articles($section_list, array(), $category_article_list, $debug);
     }
 
     // set up hierarchy
@@ -2830,12 +2826,10 @@ function adi_menu($atts) {
             dmp($category_article_exclude);
             echo "CATEGORY ARTICLE LIST (include minus exclude):";
             dmp($category_article_list);
-            if ($new_article_mode) {
-                echo "ARTICLE LIST (by section):";
-                dmp($article_list);
-                echo "ARTICLE LIST (by category):";
-                dmp($cat_article_list);
-            }
+            echo "ARTICLE LIST (by section):";
+            dmp($article_list);
+            echo "ARTICLE LIST (by category):";
+            dmp($cat_article_list);
         }
         else
             echo '(ARTICLE MODE NOT SELECTED)'.br.br;
@@ -2872,7 +2866,6 @@ function adi_menu($atts) {
         echo "Submenu level = $sub_menu_level".br;
         echo "Current article id = ".$pretext['id']."".br;
         echo "Articles = $articles".br;
-        echo "New article mode = $new_article_mode".br;
         $page_status = !empty($GLOBALS['txp_error_code']) ? $GLOBALS['txp_error_code'] : $pretext['status'];
         echo "Page status: $page_status";
         echo if_status(array(), TRUE) ? " (Normal page)".br : " (Error page)".br;

@@ -1,4 +1,12 @@
-#@language en, en-ca, en-gb, en-us
+#@owner gomedia
+#@language en
+adi_install_fail => Unable to install
+adi_installed => Installed
+adi_not_installed => Not installed
+adi_uninstall => Uninstall
+adi_uninstall_fail => Unable to uninstall
+adi_uninstalled => Uninstalled
+adi_update_prefs => Update preferences
 #@admin-side
 adi_menu => Menu
 #@adi_menu
@@ -6,8 +14,6 @@ adi_alt_title => Alternative title
 adi_clone_title => Clone title
 adi_clone => Clone
 adi_for_example => For example
-adi_install_fail => Unable to install
-adi_installed => Installed
 adi_menu_duplicate_warning => Standard/virtual section name duplicates
 adi_menu_loop_warning => Parent/child loops found
 adi_menu_order_update_failed => Menu order update failed
@@ -36,23 +42,24 @@ adi_redirect_link_id => Redirect link ID
 adi_redirect_link => Redirect link
 adi_redirect_section => Redirect section
 adi_summary => Summary
-adi_uninstall_fail => Unable to uninstall
-adi_uninstall => Uninstall
-adi_uninstalled => Uninstalled
 adi_update_menu => Update menu
-adi_update_prefs => Update preferences
 adi_write_tab_select_format => Write tab section list format
 adi_write_tab_select_indent => Write tab section list indent
 
-#@language cs-cz
+#@language cs
+adi_install_fail => Nelze nainstalovat
+adi_installed => Nainstalováno
+adi_not_installed => Nenainstalováno
+adi_uninstall => Odinstalovat
+adi_uninstall_fail => Nelze odinstalovat
+adi_uninstalled => Odinstalováno
+adi_update_prefs => Aktualizovat nastavení
 #@admin-side
 adi_menu => Menu
 #@adi_menu
 adi_alt_title => Alternativní název
 adi_clone => Klon
 adi_clone_title => Název klonu
-adi_install_fail => Nelze nainstalovat
-adi_installed => Nainstalováno
 adi_menu_loop_warning => Nalezena smyčka rodič/dědic
 adi_menu_parent_warning => Rubriky s neexistující rodičovskou rubrikou
 adi_menu_redirect_link_warning => Rubriky přesměrované na neexistující odkazy
@@ -62,27 +69,27 @@ adi_menu_summary_note => Výše zvolená konfigurace vygeneruje tuto hierarchii 
 adi_menu_summary_note_key => tučně zvýrazněné rubriky jsou přesměrované, rubriky kurzívou mají alternativní názvy
 adi_menu_update_fail => Aktualizace menu se nezdařila
 adi_menu_updated => Menu aktualizováno
-adi_not_installed => Nenainstalováno
 adi_redirect_link_id => Přesměrovaný odkaz ID
 adi_redirect_section => Přesměrovaná rubrika
 adi_summary => Výsledek
-adi_uninstall => Odinstalovat
-adi_uninstall_fail => Nelze odinstalovat
-adi_uninstalled => Odinstalováno
 adi_update_menu => Aktualizovat menu
-adi_update_prefs => Aktualizovat nastavení
 adi_write_tab_select_format => Formát řazení a zobrazení rubrik v sekci Psaní
 adi_write_tab_select_indent => Odsazení podřízených rubrik
 
-#@language fr-fr
+#@language fr
+adi_install_fail => Impossible d'installer
+adi_installed => Installé
+adi_not_installed => Non installé
+adi_uninstall => Désinstaller
+adi_uninstall_fail => Impossible de désinstaller
+adi_uninstalled => Désinstallé
+adi_update_prefs => Mettre à jour les préférences
 #@admin-side
 adi_menu => Menu
 #@adi_menu
 adi_alt_title => Texte alternatif
 adi_clone => Cloner
 adi_clone_title => Cloner le titre
-adi_install_fail => Impossible d'installer
-adi_installed => Installé
 adi_menu_loop_warning => Boucles Parent/Enfant décelées
 adi_menu_parent_warning => Sections avec parents inexistants
 adi_menu_redirect_link_warning => Sections redirigées vers des liens inexistants
@@ -92,27 +99,27 @@ adi_menu_summary_note => La configuration ci-dessus génèrera la hiérarchie de
 adi_menu_summary_note_key => les sections en gras sont redirigées, les sections en italique comportent des titres alternatifs
 adi_menu_update_fail => La mise à jour du menu a échouée
 adi_menu_updated => Menu mis à jour
-adi_not_installed => Non installé
 adi_redirect_link_id => Rediriger l'ID du lien
 adi_redirect_section => Rediriger la section
 adi_summary => Sommaire
-adi_uninstall => Désinstaller
-adi_uninstall_fail => Impossible de désinstaller
-adi_uninstalled => Désinstallé
 adi_update_menu => Mettre à jour
-adi_update_prefs => Mettre à jour les préférences
 adi_write_tab_select_format => Format de la liste des section dans l'onglet Rédiger
 adi_write_tab_select_indent => Indentation des sections dans l'onglet Rédiger
 
-#@language pl-pl
+#@language pl
+adi_install_fail => Nie można zainstalować
+adi_installed => Zainstalowano
+adi_not_installed => Nie zainstalowano
+adi_uninstall => Odinstaluj
+adi_uninstall_fail => Nie udało się odinstalować
+adi_uninstalled => Odinstalowano
+adi_update_prefs => Uaktualnij ustawienia
 #@admin-side
 adi_menu => Menu
 #@adi_menu
 adi_alt_title => Inny tytuł
 adi_clone => Sklonuj
 adi_clone_title => Sklonuj tytuł
-adi_install_fail => Nie można zainstalować
-adi_installed => Zainstalowano
 adi_menu_loop_warning => Znaleziono sekcje będące wzajemnie rodzicami i dziećmi
 adi_menu_parent_warning => Znaleziono sekcje bez rodziców
 adi_menu_redirect_link_warning => Sekcje przekierowane do nieistniejących linków
@@ -122,14 +129,9 @@ adi_menu_summary_note => Powyższa konfiguracja wygeneruje następującą hierar
 adi_menu_summary_note_key => sekcje wyboldowane są przekierowywane, sekcje kursywą mają zmienione tytuły
 adi_menu_update_fail => Nie udało się uaktualnić menu
 adi_menu_updated => Menu uaktualnione
-adi_not_installed => Nie zainstalowano
 adi_redirect_link_id => ID linka przekierowującego
 adi_redirect_section => Przekieruj na sekcję
 adi_summary => Podsumowanie
-adi_uninstall => Odinstaluj
-adi_uninstall_fail => Nie udało się odinstalować
-adi_uninstalled => Odinstalowano
 adi_update_menu => Uaktualnij menu
-adi_update_prefs => Uaktualnij ustawienia
 adi_write_tab_select_format => Widoczne w zakładce Napisz
 adi_write_tab_select_indent => Wcięcia w liście sekcji w zakładce Napisz
